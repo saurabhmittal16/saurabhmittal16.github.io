@@ -9,13 +9,13 @@
         <atom:link href="https://saurabhmittal16.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
         
         <item>
-            <title>First Blog</title>
-            <link>https://saurabhmittal16.github.io/posts/2020/03/first-blog/</link>
+            <title>First Post</title>
+            <link>https://saurabhmittal16.github.io/posts/2020/03/first-post/</link>
             <pubDate>Sun, 08 Mar 2020 13:06:13 +0530</pubDate>
             
-            <guid>https://saurabhmittal16.github.io/posts/2020/03/first-blog/</guid>
-            <description>Hello world, welcome to my blog. I will use this blog for articles about projects I am working on or for CTF writeups of challenges</description>
-            <content type="html"><![CDATA[<p>Hello world, welcome to my blog. I will use this blog for articles about projects I am working on or for CTF writeups of challenges</p>
+            <guid>https://saurabhmittal16.github.io/posts/2020/03/first-post/</guid>
+            <description>Hello friend, welcome to my blog. I will use this blog for articles about projects I am working on or for CTF writeups of challenges</description>
+            <content type="html"><![CDATA[<p>Hello friend, welcome to my blog. I will use this blog for articles about projects I am working on or for CTF writeups of challenges</p>
 ]]></content>
         </item>
         
