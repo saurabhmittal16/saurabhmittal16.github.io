@@ -1,3 +1,3 @@
 # Portfolio
 
-Portfolio website
+My portfolio blog website made using Hugo
