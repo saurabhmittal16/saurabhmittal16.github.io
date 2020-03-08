@@ -3,17 +3,27 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://saurabhmittal16.github.io/posts/2020/03/first-blog/</loc>
+    <lastmod>2020-03-08T13:06:13+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://saurabhmittal16.github.io/posts/</loc>
+    <lastmod>2020-03-08T13:06:13+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://saurabhmittal16.github.io/</loc>
+    <lastmod>2020-03-08T13:06:13+05:30</lastmod>
+  </url>
+  
+  <url>
     <loc>https://saurabhmittal16.github.io/about/</loc>
     <lastmod>2020-03-08T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://saurabhmittal16.github.io/projects/</loc>
-    <lastmod>2020-03-08T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://saurabhmittal16.github.io/</loc>
     <lastmod>2020-03-08T00:00:00+00:00</lastmod>
   </url>
   

@@ -6,10 +6,19 @@
     <description>Recent content on Saurabh Mittal</description>
     <generator>Hugo -- gohugo.io</generator>
     <copyright>&lt;a href=&#34;https://creativecommons.org/licenses/by-nc/4.0/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;CC BY-NC 4.0&lt;/a&gt;</copyright>
-    <lastBuildDate>Sun, 08 Mar 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 08 Mar 2020 13:06:13 +0530</lastBuildDate>
     
 	<atom:link href="https://saurabhmittal16.github.io/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>First Blog</title>
+      <link>https://saurabhmittal16.github.io/posts/2020/03/first-blog/</link>
+      <pubDate>Sun, 08 Mar 2020 13:06:13 +0530</pubDate>
+      
+      <guid>https://saurabhmittal16.github.io/posts/2020/03/first-blog/</guid>
+      <description>Hello world, welcome to my blog. I will use this blog for articles about projects I am working on or for CTF writeups of challenges</description>
+    </item>
     
     <item>
       <title>About</title>
