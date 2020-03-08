@@ -37,7 +37,8 @@ Here&amp;rsquo;s a few things I have worked with -
       <pubDate>Sun, 08 Mar 2020 00:00:00 +0000</pubDate>
       
       <guid>https://saurabhmittal16.github.io/projects/</guid>
-      <description>List of my projects</description>
+      <description>Event Scraper A web scraper built with Puppeteer to scrape and store information of various events (from Facebook) organised by different societies and clubs inside the university. The store information is distributed using a mobile app.
+Stone Paper Scissors Game A multiplayer Stone Paper Scissors game where two players can play against each other by passing the generated link to the other player and compete. Built with Web Sockets and React.</description>
     </item>
     
   </channel>
