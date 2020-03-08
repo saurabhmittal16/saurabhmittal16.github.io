@@ -1,6 +1,6 @@
 hugo -t hello-friend-ng
 git checkout master
-cp -r spublic/* ./
+cp -r public/* ./
 rm -r public/
 
 git add .
