@@ -1,21 +1,142 @@
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-    <channel>
-        <title>Posts on Saurabh Mittal</title>
-        <link>https://saurabhmittal16.github.io/posts/</link>
-        <description>Recent content in Posts on Saurabh Mittal</description>
-        <generator>Hugo -- gohugo.io</generator>
-        <copyright>&lt;a href=&#34;https://creativecommons.org/licenses/by-nc/4.0/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;CC BY-NC 4.0&lt;/a&gt;</copyright>
-        <lastBuildDate>Sun, 05 Apr 2020 15:40:35 +0530</lastBuildDate>
-        <atom:link href="https://saurabhmittal16.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="Saurabh Mittal ">
+<meta name="description" content="I recently came across the ropemporium challenges while looking for resources to learn Return Oriented Programming (ROP). The challenges are very good and the difficulty increases with the problems which keeps things interesting. The challenge this writeup is about is the pivot challenge. I will be using the 32 bit binary for the explanation purpose but the solution is pretty much the same for both 32 and 64 bit." />
+<meta name="keywords" content=", ctf, rop, pivot" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="#252627" />
+<link rel="canonical" href="https://saurabhmittal16.github.io/posts/2020/04/rop-emporium-pivot-writeup/" />
+
+
+    <title>
         
-        <item>
-            <title>ROP Emporium - Pivot Writeup</title>
-            <link>https://saurabhmittal16.github.io/posts/2020/04/rop-emporium-pivot-writeup/</link>
-            <pubDate>Sun, 05 Apr 2020 15:40:35 +0530</pubDate>
+            ROP Emporium - Pivot Writeup :: Saurabh Mittal 
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="https://saurabhmittal16.github.io/main.min.7bfbbe12786fa0ded4b4c0d792cbb36a5bd0bdb0b856dde57aa7b1f6fe0f2b87.css">
+
+
+
+
+    <link rel="apple-touch-icon" sizes="180x180" href="https://saurabhmittal16.github.io/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://saurabhmittal16.github.io/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://saurabhmittal16.github.io/favicon-16x16.png">
+    <link rel="manifest" href="https://saurabhmittal16.github.io/site.webmanifest">
+    <link rel="mask-icon" href="https://saurabhmittal16.github.io/safari-pinned-tab.svg" color="#252627">
+    <link rel="shortcut icon" href="https://saurabhmittal16.github.io/favicon.ico">
+    <meta name="msapplication-TileColor" content="#252627">
+    <meta name="theme-color" content="#252627">
+
+<meta itemprop="name" content="ROP Emporium - Pivot Writeup">
+<meta itemprop="description" content="I recently came across the ropemporium challenges while looking for resources to learn Return Oriented Programming (ROP). The challenges are very good and the difficulty increases with the problems which keeps things interesting. The challenge this writeup is about is the pivot challenge. I will be using the 32 bit binary for the explanation purpose but the solution is pretty much the same for both 32 and 64 bit.">
+
+
+<meta itemprop="datePublished" content="2020-04-05T15:40:35&#43;05:30" />
+<meta itemprop="dateModified" content="2020-04-05T15:40:35&#43;05:30" />
+<meta itemprop="wordCount" content="1701">
+
+
+
+<meta itemprop="keywords" content="ctf,rop,pivot," />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://saurabhmittal16.github.io"/>
+
+<meta name="twitter:title" content="ROP Emporium - Pivot Writeup"/>
+<meta name="twitter:description" content="I recently came across the ropemporium challenges while looking for resources to learn Return Oriented Programming (ROP). The challenges are very good and the difficulty increases with the problems which keeps things interesting. The challenge this writeup is about is the pivot challenge. I will be using the 32 bit binary for the explanation purpose but the solution is pretty much the same for both 32 and 64 bit."/>
+
+
+
+
+
+    <meta property="article:published_time" content="2020-04-05 15:40:35 &#43;0530 IST" />
+
+
+
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="https://saurabhmittal16.github.io/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">$ cd /home/</span>
+            <span class="logo__cursor" style=
+                  "
+                   
+                   ">
+            </span>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
             
-            <guid>https://saurabhmittal16.github.io/posts/2020/04/rop-emporium-pivot-writeup/</guid>
-            <description>I recently came across the ropemporium challenges while looking for resources to learn Return Oriented Programming (ROP). The challenges are very good and the difficulty increases with the problems which keeps things interesting. The challenge this writeup is about is the pivot challenge. I will be using the 32 bit binary for the explanation purpose but the solution is pretty much the same for both 32 and 64 bit.</description>
-            <content type="html"><![CDATA[
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="https://saurabhmittal16.github.io/about/">About</a></li><li><a href="https://saurabhmittal16.github.io/posts/">Posts</a></li><li><a href="https://saurabhmittal16.github.io/projects/">Projects</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+    <main class="post">
+
+        <div class="post-info">
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>8 minutes
+
+            
+
+            </p>
+        </div>
+
+        <article>
+            <h1 class="post-title">
+                <a href="https://saurabhmittal16.github.io/posts/2020/04/rop-emporium-pivot-writeup/">ROP Emporium - Pivot Writeup</a>
+            </h1>
+
+            
+
+            <div class="post-content">
+                
 
 <p>I recently came across the <a href="https://ropemporium.com/" target="_blank">ropemporium</a> challenges while looking for resources to learn Return Oriented Programming (ROP). The challenges are very good and the difficulty increases with the problems which keeps things interesting. The challenge this writeup is about is the <a href="https://ropemporium.com/challenge/pivot.html" target="_blank">pivot</a> challenge. I will be using the 32 bit binary for the explanation purpose but the solution is pretty much the same for both 32 and 64 bit.</p>
 
@@ -221,19 +342,80 @@ Now kindly send your stack smash
 foothold_function<span style="color:#f92672">()</span>, check out my .got.plt entry to gain a foothold into libpivot.so
 <span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> ROPE<span style="color:#f92672">{</span>a_placeholder_32byte_flag!<span style="color:#f92672">}</span></code></pre></div>
 <p>That&rsquo;s the end of this post. This is a great challenge and is great for beginners. Cheers!</p>
-]]></content>
-        </item>
+
+            </div>
+        </article>
+
+        <hr />
+
+        <div class="post-info">
+                <p>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line></svg><span class="tag"><a href="https://saurabhmittal16.github.io/tags/ctf">ctf</a></span><span class="tag"><a href="https://saurabhmittal16.github.io/tags/rop">rop</a></span><span class="tag"><a href="https://saurabhmittal16.github.io/tags/pivot">pivot</a></span>
+                </p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>1701 Words</p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2020-04-05 15:40 &#43;0530</p>
+        </div>
+
         
-        <item>
-            <title>First Post</title>
-            <link>https://saurabhmittal16.github.io/posts/2020/03/first-post/</link>
-            <pubDate>Sun, 08 Mar 2020 13:06:13 +0530</pubDate>
+            <div class="pagination">
+                <div class="pagination__title">
+                    <span class="pagination__title-h"></span>
+                    <hr />
+                </div>
+
+                <div class="pagination__buttons">
+                    
+
+                    
+                        <span class="button next">
+                            <a href="https://saurabhmittal16.github.io/posts/2020/03/first-post/">
+                                <span class="button__text">First Post</span>
+                                <span class="button__icon">→</span>
+                            </a>
+                        </span>
+                    
+                </div>
+            </div>
+        
+
+        
+    </main>
+
+            </div>
+
             
-            <guid>https://saurabhmittal16.github.io/posts/2020/03/first-post/</guid>
-            <description>Hello friend, welcome to my blog. I will use this blog for articles about projects I am working on or for CTF writeups of challenges</description>
-            <content type="html"><![CDATA[<p>Hello friend, welcome to my blog. I will use this blog for articles about projects I am working on or for CTF writeups of challenges</p>
-]]></content>
-        </item>
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2020</span>
+            
+                <span><a href="https://saurabhmittal16.github.io">Saurabh Mittal</a></span>
+            
+            <span><a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></span>
+            <span> <a href="https://saurabhmittal16.github.io/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>Powered by <a href="http://gohugo.io">Hugo</a></span>
+            <span>Made with &#10084; by <a href="https://github.com/rhazdon">Djordje Atlialp</a></span>
+        </div>
+    </div>
+</footer>
+
+            
+        </div>
+
         
-    </channel>
-</rss>
+
+
+
+
+<script type="text/javascript" src="https://saurabhmittal16.github.io/bundle.min.2d5469329143160ae2456a69c3c76dc2d0a3b212b46afe291a51bd68650ed6f8697e001dab54f1c272c77ce08092a8c55e5bb4314e0ee334aab4b927ec896638.js" integrity="sha512-LVRpMpFDFgriRWppw8dtwtCjshK0av4pGlG9aGUO1vhpfgAdq1TxwnLHfOCAkqjFXlu0MU4O4zSqtLkn7IlmOA=="></script>
+
+
+
+    </body>
+</html>
