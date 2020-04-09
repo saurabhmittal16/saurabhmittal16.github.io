@@ -56,7 +56,7 @@ GDB breaks and the address is printed by the binary (<code>0xf7dc8f10</code> in 
 <h2 id="pivot-the-stack">Pivot the stack</h2>
 
 <p>The next step is to build the shorter ROP chain which pivots the stack but what does pivoting the stack mean?
-In simple terms, pivoting the stack means to make the stack pointer (<code>ESP</code>) point to a memory location which we control instead of the actual stack. So, all we need to do is make <code>ESP</code> point to the address where are longer ROP chain will be saved.</p>
+In simple terms, pivoting the stack means to make the stack pointer (<code>ESP</code>) point to a memory location which we control instead of the actual stack. So, all we need to do is make <code>ESP</code> point to the address where the longer ROP chain will be saved.</p>
 
 <p>For this, we need gadgets that can load the value from stack into any of the registers and then move the value of that register in <code>ESP</code>. The gadgets available inside a binary can be found using <a href="https://github.com/JonathanSalwan/ROPgadget" target="_blank">ROPGadget</a>. On running the script on our <code>pivot32</code> binary, it found 160 unique gadgets. One of them is the <code>xchg eax, esp ; ret</code> gadget which exchanges the value of <code>EAX</code> and <code>ESP</code>. It seems like this gadget was placed intentionally in the binary and that it is the case. The binary contains a function <code>usefulGadgets</code> which contains some useful gadgets.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">pwndbg&gt; disass usefulGadgets
