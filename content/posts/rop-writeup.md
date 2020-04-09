@@ -55,7 +55,7 @@ This confirms that the address received from binary is where the longer chain wi
 ## Pivot the stack
 
 The next step is to build the shorter ROP chain which pivots the stack but what does pivoting the stack mean?
-In simple terms, pivoting the stack means to make the stack pointer (`ESP`) point to a memory location which we control instead of the actual stack. So, all we need to do is make `ESP` point to the address where are longer ROP chain will be saved.
+In simple terms, pivoting the stack means to make the stack pointer (`ESP`) point to a memory location which we control instead of the actual stack. So, all we need to do is make `ESP` point to the address where the longer ROP chain will be saved.
 
 For this, we need gadgets that can load the value from stack into any of the registers and then move the value of that register in `ESP`. The gadgets available inside a binary can be found using [ROPGadget](https://github.com/JonathanSalwan/ROPgadget). On running the script on our `pivot32` binary, it found 160 unique gadgets. One of them is the `xchg eax, esp ; ret` gadget which exchanges the value of `EAX` and `ESP`. It seems like this gadget was placed intentionally in the binary and that it is the case. The binary contains a function `usefulGadgets` which contains some useful gadgets.
 
