@@ -9,16 +9,20 @@ tags:
   - pwn
 ---
 
-I participated in the [WPICTF](https://ctf.wpictf.xyz/) over the weekend and it was a great experience. The challenges were fun and challenging at the same time. I solved a few challenges but the part that I am happy about is that I was able to solve 2 out of 4 pwn challenges. In this post, I will explain how I solved `dorsia1` and `dorsia3`.
+I participated in the [WPICTF](https://ctf.wpictf.xyz/) over the weekend and it was a great experience. The challenges were fun and hard enough to keep things interesting. I solved a few challenges but the part that makes me happy is that I solved 2 out of the 4 pwn problems. In this post, I will explain how I solved the two pwns - `dorsia1` and `dorsia3`.
 
 ## dorsia1
 
-The source code of some of the challenges were placed in a video. No binary was provided for this challenge. The problem description had the remote url of the challenge was hosted and a hint which read - "Same libc as dorsia4, but you shouldn't need the file to solve". Here is the source code from the video.
+The source codes of some of the challenges were placed in a video. No binary was provided for this one. The problem description had the remote URL where the challenge was hosted and a hint which read 
+
+> Same libc as dorsia4, but you shouldn't need the file to solve 
+
+Here is the source code from the video.
 
 <div align='center'><img src="/static/dorsia1.png"/></div>
 
 ### First Thoughts
-First thoughts were to download the libc from `dorsia4` challenge. Also looking at the code, the use of `fgets` with `96` characters makes it clear that it's a buffer overflow. But since there is no binary provided, we might need to guess the padding to overwrite the return pointer. Also the binary prints the address of `system + 765772` which is different on every connect to the remote url. This means that `ASLR` is enabled but the printed address can be used to get the `libc` base address. So, I can control the flow of the program but where to redirect the flow? I recently read about the conecpt of `one gadget RCE` and it seemed like a good oppurtunity to try it.
+First thoughts were to download the libc from `dorsia4` challenge. Also looking at the code, the use of `fgets` with `96` characters makes it clear that it's a buffer overflow. But since there is no binary provided, we might need to guess the padding to overwrite the return pointer. Also the binary prints the address of `system + 765772` which is different on every connection to the remote URL. This means that `ASLR` is enabled but this can be easily circumvented, the printed address can be used to get the `libc` base address. So, we can control the flow of the program but where to _redirect_ the flow? I recently read about the conecpt of `one gadget RCE` and it seemed like a good oppurtunity to try it.
 
 ### Exploit
 
@@ -63,7 +67,7 @@ constraints:
 constraints:
   [rsp+0x70] == NULL
 ```
-You can see the constraints that need to be met for the gadget to work. I decided to use `0x4f322` since the chances of `[rsp+0x40]` being `NULL` were high. The address of the gadget can be calculated by adding this offset to the base address. This is all we need to solve this challenge. For the padding, you needed to guess a few values and `77` worked. Here is the final script.
+You can see the constraints that need to be met for that gadget to work. I decided to use `0x4f322` since the chances of `[rsp+0x40]` being `NULL` were high. The address of the gadget can be calculated by adding this offset to the base address. This is all we need to solve this challenge. The padding value had to be guesses but it was obviously greater than `69` and `77` worked. Here is the final script.
 
 ```python
 from pwn import *
@@ -89,6 +93,8 @@ p.sendline(payload)
 p.interactive()
 ```
 
+Done. Solved.
+
 ## dorsia3
 
 In this challenge, both the binary and the libc was provided. The same video had the source code for this challenge too. Here is the source code.
@@ -96,9 +102,9 @@ In this challenge, both the binary and the libc was provided. The same video had
 <div align='center'><img src="/static/dorsia3.png"/></div>
 
 ### First Thoughts
-First thoughts were that. since this uses `printf`, it's a format string vulnerability. The binary prints two addresses - the address of beginning of character array `a` and the address of `system`. This binary had `ASLR` and `PIE` enabled too which means the addresses printed by the binary were important. 
+First thoughts were that, since this uses `printf`, it's a format string vulnerability. The binary prints two addresses - the address of the beginning of character array `a` and the address of `system`. This binary had `ASLR` and `PIE` enabled too which means the addresses printed by the binary were important. 
 
-Due to `printf`, we have arbitrary write but what to write and where? First idea is to overwrite `GOT` entries but due to `PIE`, the binary would be loaded in a different memory region everytime. We could leak some addresses from `printf` and get the base address but we only have one `printf` and we can't read and write using the same query. The next idea was to overwrite the return pointer in stack to control the flow and maybe redirect to `one gagdet`. But this approach didn't work because the constraints of `one gadgets` found required that the `GOT` address of `libc` be in `ESI`.
+Due to `printf`, we have arbitrary write but what to write and where? First idea was to overwrite `GOT` entries but due to `PIE`, the binary would be loaded in a different memory region every time and finding `GOT` or `PLT` entries would be impossible. We could leak some addresses from `printf` and get the base address but we only have one `printf` and we can't read and write using the same query. The next idea was to overwrite the return pointer in stack to control the flow and maybe redirect to `one gagdet`. But this approach didn't work because the constraints of `one gadgets` found, required that the `GOT` address of `libc` be in `ESI`. 
 
 ```bash
 $ one_gadget ./libc.so.6
@@ -107,11 +113,11 @@ constraints:
   esi is the GOT address of libc
   [esp+0x34] == NULL
 ```
-
-But we have the address of `libc`, maybe we could perfome `ret2libc`. So, we need the address of the saved `EIP` and also the address of the string `/bin/sh` in the given `libc`.
+I guess it means that the base address of `libc` should be in `ESI` but it doesn't matter because for placing values in registers, we would have to build a ROP chain but the available buffer is only `69` characters. But we have the address of `libc`, maybe we could perform a `return-to-libc`. For this, we need the address of the saved return pointer - `EIP` and also the address of the string `/bin/sh` in the given `libc`.
 
 ### Exploit
-The first thing I did was find the offset for `/bin/sh` in the `libc`.Here's a simple trick to find the required string in the binary - 
+The first thing I did was find the offset for `/bin/sh` in the `libc`. Here's a simple trick to find the required string in the binary. 
+
 ```bash
 $ strings -t x -a ./libc.so.6 | grep '/bin/sh'
 ```
@@ -142,9 +148,9 @@ binsh_offset = 0x17e0cf
 binsh = libc_base + binsh_offset
 ```
 
-The next part was to find out at what position is our input present on the stack. Passing a simple `AAAA%x,%x,%x,%x,%x,%x,%x,%x` type string reveals that `AAAA` is the seventh value on stack. This means we can access the value at the beginning of our format string using the seventh argument. If you are not familiar with how format string exploits work, I would recommend [this](https://www.youtube.com/watch?v=t1LH9D5cuK4) video. The final step was to find the correct spacing to write the exact values on the desired address. After hours of hit and trial, I decided to use a little mathematics and make it easier.
+The next part was to find out at what position is our input present on the stack. Passing a simple `AAAA%x,%x,%x,%x,%x,%x,%x,%x` type string reveals that `AAAA` is the seventh value on the stack. This means we can access the value at the beginning of our format string using the seventh argument. If you are not familiar with how format string exploits work, I would recommend [this](https://www.youtube.com/watch?v=t1LH9D5cuK4) video. The final step was to find the correct spacing to write the exact values on the desired address. After hours of hit and trial, I decided to use a little mathematics and make it easier.
 
-Here is a simple function I wrote that takes an address in hex and splits it into two values that can be written at the required address and 2 bytes from it.
+Here is a simple function I wrote that takes an address in hex and splits it into two values that can be written at the required address and the address 2 bytes from it.
 
 ```python
 def get_halves(num):
@@ -158,7 +164,7 @@ def get_halves(num):
 	# returns 0xf7d9, 0x9200
 ```
 
-Using this, I split the address in two halves and added/subtracted the extra characters that were getting printed. Here is the final script which gives a shell on the remote server.
+Using this, I split the `libc` and `/bin/sh` addresses in two halves and added/subtracted the extra characters that were getting printed. Here is the final script which gives a shell on the remote server.
 
 ```python
 from pwn import *
@@ -210,4 +216,4 @@ p.sendline(payload)
 p.interactive()
 ```
 
-These are the two pwn problems I was able to solve. I really enjoyed working on these challenges and it was a great CTF overall. Thanks for reading. Cheers!
+These are the solutions of the two pwn problems I was able to solve. I realise that the first problem could be solved without downloading the `libc`, so I would try to solve it without that too if the challenge binaries are released. In the end, I enjoyed working on these challenges and it was a great CTF overall. Thanks for reading. Cheers!
