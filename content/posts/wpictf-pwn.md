@@ -13,15 +13,16 @@ I participated in the [WPICTF](https://ctf.wpictf.xyz/) over the weekend and it 
 
 ## dorsia1
 
-The source codes of some of the challenges were placed in a video. No binary was provided for this one. The problem description had the remote URL where the challenge was hosted and a hint which read 
+The source codes of some of the challenges were placed in a video. No binary was provided for this one. The problem description had the remote URL where the challenge was hosted and a hint which read
 
-> Same libc as dorsia4, but you shouldn't need the file to solve 
+> Same libc as dorsia4, but you shouldn't need the file to solve
 
 Here is the source code from the video.
 
-<div align='center'><img src="/static/dorsia1.png"/></div>
+![dorsia1](/static/dorsia1.png)
 
 ### First Thoughts
+
 First thoughts were to download the libc from `dorsia4` challenge. Also looking at the code, the use of `fgets` with `96` characters makes it clear that it's a buffer overflow. But since there is no binary provided, we might need to guess the padding to overwrite the return pointer. Also the binary prints the address of `system + 765772` which is different on every connection to the remote URL. This means that `ASLR` is enabled but this can be easily circumvented, the printed address can be used to get the `libc` base address. So, we can control the flow of the program but where to _redirect_ the flow? I recently read about the conecpt of `one gadget RCE` and it seemed like a good oppurtunity to try it.
 
 ### Exploit
@@ -67,6 +68,7 @@ constraints:
 constraints:
   [rsp+0x70] == NULL
 ```
+
 You can see the constraints that need to be met for that gadget to work. I decided to use `0x4f322` since the chances of `[rsp+0x40]` being `NULL` were high. The address of the gadget can be calculated by adding this offset to the base address. This is all we need to solve this challenge. The padding value had to be guesses but it was obviously greater than `69` and `77` worked. Here is the final script.
 
 ```python
@@ -99,12 +101,13 @@ Done. Solved.
 
 In this challenge, both the binary and the libc was provided. The same video had the source code for this challenge too. Here is the source code.
 
-<div align='center'><img src="/static/dorsia3.png"/></div>
+![dorsia1](/static/dorsia3.png)
 
 ### First Thoughts
-First thoughts were that, since this uses `printf`, it's a format string vulnerability. The binary prints two addresses - the address of the beginning of character array `a` and the address of `system`. This binary had `ASLR` and `PIE` enabled too which means the addresses printed by the binary were important. 
 
-Due to `printf`, we have arbitrary write but what to write and where? First idea was to overwrite `GOT` entries but due to `PIE`, the binary would be loaded in a different memory region every time and finding `GOT` or `PLT` entries would be impossible. We could leak some addresses from `printf` and get the base address but we only have one `printf` and we can't read and write using the same query. The next idea was to overwrite the return pointer in stack to control the flow and maybe redirect to `one gagdet`. But this approach didn't work because the constraints of `one gadgets` found, required that the `GOT` address of `libc` be in `ESI`. 
+First thoughts were that, since this uses `printf`, it's a format string vulnerability. The binary prints two addresses - the address of the beginning of character array `a` and the address of `system`. This binary had `ASLR` and `PIE` enabled too which means the addresses printed by the binary were important.
+
+Due to `printf`, we have arbitrary write but what to write and where? First idea was to overwrite `GOT` entries but due to `PIE`, the binary would be loaded in a different memory region every time and finding `GOT` or `PLT` entries would be impossible. We could leak some addresses from `printf` and get the base address but we only have one `printf` and we can't read and write using the same query. The next idea was to overwrite the return pointer in stack to control the flow and maybe redirect to `one gagdet`. But this approach didn't work because the constraints of `one gadgets` found, required that the `GOT` address of `libc` be in `ESI`.
 
 ```bash
 $ one_gadget ./libc.so.6
@@ -113,10 +116,12 @@ constraints:
   esi is the GOT address of libc
   [esp+0x34] == NULL
 ```
+
 I guess it means that the base address of `libc` should be in `ESI` but it doesn't matter because for placing values in registers, we would have to build a ROP chain but the available buffer is only `69` characters. But we have the address of `libc`, maybe we could perform a `return-to-libc`. For this, we need the address of the saved return pointer - `EIP` and also the address of the string `/bin/sh` in the given `libc`.
 
 ### Exploit
-The first thing I did was find the offset for `/bin/sh` in the `libc`. Here's a simple trick to find the required string in the binary. 
+
+The first thing I did was find the offset for `/bin/sh` in the `libc`. Here's a simple trick to find the required string in the binary.
 
 ```bash
 $ strings -t x -a ./libc.so.6 | grep '/bin/sh'
@@ -154,14 +159,13 @@ Here is a simple function I wrote that takes an address in hex and splits it int
 
 ```python
 def get_halves(num):
-	# example nhex = f7d99200
-	nhex = hex(num)[2:]
-
-	first = int(nhex[0:4], 16)
-	second = int(nhex[4:], 16)
-
-	return first, second
-	# returns 0xf7d9, 0x9200
+  # example nhex = f7d99200
+  nhex = hex(num)[2:]
+  first = int(nhex[0:4], 16)
+  second = int(nhex[4:], 16)
+  
+  return first, second
+  # returns 0xf7d9, 0x9200
 ```
 
 Using this, I split the `libc` and `/bin/sh` addresses in two halves and added/subtracted the extra characters that were getting printed. Here is the final script which gives a shell on the remote server.
@@ -170,11 +174,11 @@ Using this, I split the `libc` and `/bin/sh` addresses in two halves and added/s
 from pwn import *
 
 def get_halves(num):
-	nhex = hex(num)[2:]
-	first = int(nhex[0:4], 16)
-	second = int(nhex[4:], 16)
+  nhex = hex(num)[2:]
+  first = int(nhex[0:4], 16)
+  second = int(nhex[4:], 16)
 
-	return first, second
+  return first, second
 
 # space between string beginning and return pointer
 diff = 113
