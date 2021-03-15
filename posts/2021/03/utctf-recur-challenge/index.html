@@ -44,7 +44,7 @@ The challenge had a binary file attached with it and the description of the chal
 <meta itemprop="description" content="Over the weekend, I participated in the UTCTF 2021 but was unable to spend a lot of time on the challenges. One of the challenge I worked on was the recur challenge in the Reverse Engineering category. The challenge was not that hard but I had fun working on it so I decided to write a writeup for the challenge.
 The challenge had a binary file attached with it and the description of the challenge was"><meta itemprop="datePublished" content="2021-03-15T22:00:35&#43;05:30" />
 <meta itemprop="dateModified" content="2021-03-15T22:00:35&#43;05:30" />
-<meta itemprop="wordCount" content="527"><meta itemprop="image" content="https://saurabhmittal16.github.io"/>
+<meta itemprop="wordCount" content="1089"><meta itemprop="image" content="https://saurabhmittal16.github.io"/>
 <meta itemprop="keywords" content="ctf,rev," /><meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://saurabhmittal16.github.io"/>
 
@@ -117,7 +117,7 @@ The challenge had a binary file attached with it and the description of the chal
     <main class="post">
 
         <div class="post-info">
-            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>3 minutes
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>6 minutes
 
             
 
@@ -184,11 +184,9 @@ utflag<span style="color:#f92672">{</span>
 <ul>
 <li>
 <p>The <code>recurrence</code> function defines a recurrence relation that can be described as</p>
-<pre><code class="language-math" data-lang="math">f(x) = \begin{cases}
-  3 &amp;\text{if } x = 0 \\
-  5 &amp;\text{if } x = 1 \\
-  2 * f(x-1) + 3 * f(x-2) &amp;\text{else}
-\end{cases}
+<pre><code class="language-math" data-lang="math">f(x) = 3 if x = 0
+     = 5 if x = 1
+     = 2 * f(x-1) + 3 * f(x-2)
 </code></pre><p>This is similar to the Fibonacci sequence.</p>
 </li>
 <li>
@@ -199,6 +197,72 @@ utflag<span style="color:#f92672">{</span>
 </li>
 </ul>
 <p>Since, the output of the <code>recurrence</code> function is used in calculating the output character, we need the input to the <code>recurrence</code> function. The decompiled code does not show what is provided as input to the function. Also, the <code>28</code> bytes needed for flag need to be located. For both these problems, I used <code>gdb</code> to go through the assembly of the binary.</p>
+<p>Here is the assembly of the first few lines of the main function -</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">pwndbg&gt; disass main
+Dump of assembler code <span style="color:#66d9ef">for</span> <span style="color:#66d9ef">function</span> main:
+   0x000000000000119c &lt;+0&gt;: push   rbp
+   0x000000000000119d &lt;+1&gt;: mov    rbp,rsp
+   0x00000000000011a0 &lt;+4&gt;: push   rbx
+   0x00000000000011a1 &lt;+5&gt;: sub    rsp,0x18
+   0x00000000000011a5 &lt;+9&gt;: mov    DWORD PTR <span style="color:#f92672">[</span>rbp-0x14<span style="color:#f92672">]</span>,0x0
+   0x00000000000011ac &lt;+16&gt;: jmp    0x11ea &lt;main+78&gt;
+   0x00000000000011ae &lt;+18&gt;: mov    eax,DWORD PTR <span style="color:#f92672">[</span>rbp-0x14<span style="color:#f92672">]</span>
+   0x00000000000011b1 &lt;+21&gt;: cdqe   
+   0x00000000000011b3 &lt;+23&gt;: lea    rdx,<span style="color:#f92672">[</span>rip+0x2e86<span style="color:#f92672">]</span>   <span style="color:#75715e"># 0x4040 &lt;flag&gt;</span>
+</code></pre></div><p>As you can see, <code>gdb</code> has pointed out that the <code>flag</code> is stored at <code>0x4040</code> and all we need to do is read 28 bytes from this address.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">pwndbg&gt; x/28bx 0x4040
+0x4040 &lt;flag&gt;:  0x76  0x71  0xc5  0xa9  0xe2  0x22  0xd8  0xb5
+0x4048 &lt;flag+8&gt;:  0x73  0xf1  0x92  0x28  0xb2  0xbf  0x90  0x5a
+0x4050 &lt;flag+16&gt;:  0x76  0x77  0xfc  0xa6  0xb3  0x21  0x90  0xda
+0x4058 &lt;flag+24&gt;:  0x6f  0xb5  0xcf  0x38
+</code></pre></div><p>Next, we need to check what argument is provided to the <code>recurrence</code> function. For this, I just executed the binary instruction wise and observed the argument to the method. Here are the disassembly of the <code>recurrence</code> during the 3rd, 4th and 5th iteration.</p>
+<p><img src="https://saurabhmittal16.github.io/static/utctf-recur.jpg" alt="assembly"></p>
+<p>It is clear that the method takes the square of the iteration number as input. This explains why the flag stops printing after the 7th character since <code>f(64)</code> is heavy to compute.</p>
+<p>Here is a python script I wrote that covers everything we have discussed so far.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">recur</span>(n):
+    <span style="color:#66d9ef">if</span> (n <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>):
+        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">3</span>
+    <span style="color:#66d9ef">elif</span> (n <span style="color:#f92672">==</span> <span style="color:#ae81ff">1</span>):
+        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">5</span>
+    <span style="color:#66d9ef">else</span>:
+        <span style="color:#66d9ef">return</span> (<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> (recur(n<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>) <span style="color:#f92672">%</span> <span style="color:#ae81ff">256</span>) <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> (recur(n<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>) <span style="color:#f92672">%</span> <span style="color:#ae81ff">256</span>)) <span style="color:#f92672">%</span> <span style="color:#ae81ff">256</span>
+
+
+flag <span style="color:#f92672">=</span> [<span style="color:#ae81ff">0x76</span>, <span style="color:#ae81ff">0x71</span>, <span style="color:#ae81ff">0xc5</span>, <span style="color:#ae81ff">0xa9</span>, <span style="color:#ae81ff">0xe2</span>, <span style="color:#ae81ff">0x22</span>, <span style="color:#ae81ff">0xd8</span>, <span style="color:#ae81ff">0xb5</span>, <span style="color:#ae81ff">0x73</span>, <span style="color:#ae81ff">0xf1</span>, <span style="color:#ae81ff">0x92</span>, <span style="color:#ae81ff">0x28</span>, <span style="color:#ae81ff">0xb2</span>, <span style="color:#ae81ff">0xbf</span>, <span style="color:#ae81ff">0x90</span>, <span style="color:#ae81ff">0x5a</span>, <span style="color:#ae81ff">0x76</span>, <span style="color:#ae81ff">0x77</span>, <span style="color:#ae81ff">0xfc</span>, <span style="color:#ae81ff">0xa6</span>, <span style="color:#ae81ff">0xb3</span>, <span style="color:#ae81ff">0x21</span>, <span style="color:#ae81ff">0x90</span>, <span style="color:#ae81ff">0xda</span>, <span style="color:#ae81ff">0x6f</span>, <span style="color:#ae81ff">0xb5</span>, <span style="color:#ae81ff">0xcf</span>, <span style="color:#ae81ff">0x38</span>]
+
+res <span style="color:#f92672">=</span> []
+<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(len(flag)):
+    val <span style="color:#f92672">=</span> (flag[i] <span style="color:#f92672">^</span> recur(i <span style="color:#f92672">*</span> i)) <span style="color:#f92672">%</span> <span style="color:#ae81ff">256</span>
+    res<span style="color:#f92672">.</span>append(val)
+    <span style="color:#66d9ef">print</span>(chr(val))
+
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;&#39;</span><span style="color:#f92672">.</span>join(list(map(<span style="color:#66d9ef">lambda</span> x: chr(x), res))))
+</code></pre></div><p>The script is pretty easy to understand and I used mod 256 since we know that the <code>char</code> in <code>C</code> is 1 byte which means that only values <code>0-255</code> are present.</p>
+<p>If we run this script, we get the same result as the executable ie the binary is stuck after the 6th character. The solution to this involves the concept of <a href="https://en.wikipedia.org/wiki/Memoization">Memoization</a> which basically means that we remember already computed states and reuse their output instead of re-executing the function. We could use a <code>dict</code> object that saves <code>n</code> as key and the output as value. Python provides an interesting module - <a href="https://docs.python.org/3/library/functools.html">functools</a> which has the <code>lru_cache</code> method that saves up the output of the recent function calls. Here is the final script that works.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> functools
+
+<span style="color:#a6e22e">@functools.lru_cache</span>()
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">recur</span>(n):
+    <span style="color:#66d9ef">if</span> (n <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>):
+        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">3</span>
+    <span style="color:#66d9ef">elif</span> (n <span style="color:#f92672">==</span> <span style="color:#ae81ff">1</span>):
+        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">5</span>
+    <span style="color:#66d9ef">else</span>:
+        <span style="color:#66d9ef">return</span> (<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> (recur(n<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>) <span style="color:#f92672">%</span> <span style="color:#ae81ff">256</span>) <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> (recur(n<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>) <span style="color:#f92672">%</span> <span style="color:#ae81ff">256</span>)) <span style="color:#f92672">%</span> <span style="color:#ae81ff">256</span>
+
+
+flag <span style="color:#f92672">=</span> [<span style="color:#ae81ff">0x76</span>, <span style="color:#ae81ff">0x71</span>, <span style="color:#ae81ff">0xc5</span>, <span style="color:#ae81ff">0xa9</span>, <span style="color:#ae81ff">0xe2</span>, <span style="color:#ae81ff">0x22</span>, <span style="color:#ae81ff">0xd8</span>, <span style="color:#ae81ff">0xb5</span>, <span style="color:#ae81ff">0x73</span>, <span style="color:#ae81ff">0xf1</span>, <span style="color:#ae81ff">0x92</span>, <span style="color:#ae81ff">0x28</span>, <span style="color:#ae81ff">0xb2</span>, <span style="color:#ae81ff">0xbf</span>, <span style="color:#ae81ff">0x90</span>, <span style="color:#ae81ff">0x5a</span>, <span style="color:#ae81ff">0x76</span>, <span style="color:#ae81ff">0x77</span>, <span style="color:#ae81ff">0xfc</span>, <span style="color:#ae81ff">0xa6</span>, <span style="color:#ae81ff">0xb3</span>, <span style="color:#ae81ff">0x21</span>, <span style="color:#ae81ff">0x90</span>, <span style="color:#ae81ff">0xda</span>, <span style="color:#ae81ff">0x6f</span>, <span style="color:#ae81ff">0xb5</span>, <span style="color:#ae81ff">0xcf</span>, <span style="color:#ae81ff">0x38</span>]
+
+res <span style="color:#f92672">=</span> []
+<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(len(flag)):
+    val <span style="color:#f92672">=</span> (flag[i] <span style="color:#f92672">^</span> recur(i <span style="color:#f92672">*</span> i)) <span style="color:#f92672">%</span> <span style="color:#ae81ff">256</span>
+    res<span style="color:#f92672">.</span>append(val)
+
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;&#39;</span><span style="color:#f92672">.</span>join(list(map(<span style="color:#66d9ef">lambda</span> x: chr(x), res))))
+</code></pre></div><p>And here is the output of the script with the flag -</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ python3 exploit.py
+utflag<span style="color:#f92672">{</span>0pt1m1z3_ur_c0d3_l0l<span style="color:#f92672">}</span>
+</code></pre></div><p>Overall, I think it was not that hard of a challenge but it is a good challenge for someone who is starting reverse engineering and wants to familiarise themselves with the tools commonly used. Thanks for reading. Cheers!</p>
 
             </div>
         </article>
@@ -210,7 +274,7 @@ utflag<span style="color:#f92672">{</span>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line></svg><span class="tag"><a href="https://saurabhmittal16.github.io/tags/ctf">ctf</a></span><span class="tag"><a href="https://saurabhmittal16.github.io/tags/rev">rev</a></span>
                 </p>
 
-            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>527 Words</p>
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>1089 Words</p>
 
             <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2021-03-15 22:00 &#43;0530</p>
         </div>
