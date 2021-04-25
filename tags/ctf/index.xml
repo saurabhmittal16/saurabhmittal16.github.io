@@ -13,7 +13,7 @@
       <pubDate>Sun, 25 Apr 2021 22:00:35 +0530</pubDate>
       
       <guid>https://saurabhmittal16.github.io/posts/2021/04/hack-the-box-cyber-apocalypse-ctf-21/</guid>
-      <description>I participated in Hack The Box&amp;rsquo;s Cyber Apocalypse CTF 2021 this week. I was only able to solve 11 challenges (excluding the welcome challenge) but overall it was a fun event. The challenges were nice and did not need any form of guessing.
+      <description>I participated in Hack The Box&amp;rsquo;s Cyber Apocalypse CTF 2021 this week. I was only able to solve 11 challenges (excluding the welcome challenge) but overall it was a fun event. The challenges were nice and there wasn&amp;rsquo;t any guessing required. Here are the writeups for some of the challenges I was able to solve.
 WEB - Inspector Gadget This was the entry level web challenge and the flag was split in 3 parts which were then placed in the HTML, CSS and JavaScript files as comments.</description>
     </item>
     

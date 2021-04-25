@@ -14,9 +14,9 @@
             <pubDate>Sun, 25 Apr 2021 22:00:35 +0530</pubDate>
             
             <guid>https://saurabhmittal16.github.io/posts/2021/04/hack-the-box-cyber-apocalypse-ctf-21/</guid>
-            <description>I participated in Hack The Box&amp;rsquo;s Cyber Apocalypse CTF 2021 this week. I was only able to solve 11 challenges (excluding the welcome challenge) but overall it was a fun event. The challenges were nice and did not need any form of guessing.
+            <description>I participated in Hack The Box&amp;rsquo;s Cyber Apocalypse CTF 2021 this week. I was only able to solve 11 challenges (excluding the welcome challenge) but overall it was a fun event. The challenges were nice and there wasn&amp;rsquo;t any guessing required. Here are the writeups for some of the challenges I was able to solve.
 WEB - Inspector Gadget This was the entry level web challenge and the flag was split in 3 parts which were then placed in the HTML, CSS and JavaScript files as comments.</description>
-            <content type="html"><![CDATA[<p>I participated in Hack The Box&rsquo;s Cyber Apocalypse CTF 2021 this week. I was only able to solve 11 challenges (excluding the welcome challenge) but overall it was a fun event. The challenges were nice and did not need any form of guessing.</p>
+            <content type="html"><![CDATA[<p>I participated in Hack The Box&rsquo;s Cyber Apocalypse CTF 2021 this week. I was only able to solve 11 challenges (excluding the welcome challenge) but overall it was a fun event. The challenges were nice and there wasn&rsquo;t any guessing required. Here are the writeups for some of the challenges I was able to solve.</p>
 <h2 id="web---inspector-gadget">WEB - Inspector Gadget</h2>
 <p>This was the entry level web challenge and the flag was split in 3 parts which were then placed in the HTML, CSS and JavaScript files as comments.</p>
 <h2 id="web---ministryplace">WEB - MiniSTRyplace</h2>
@@ -27,11 +27,11 @@ $lang <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#39;en.
     <span style="color:#66d9ef">include</span>(<span style="color:#e6db74">&#39;pages/&#39;</span> <span style="color:#f92672">.</span> (<span style="color:#a6e22e">isset</span>($_GET[<span style="color:#e6db74">&#39;lang&#39;</span>]) <span style="color:#f92672">?</span> <span style="color:#a6e22e">str_replace</span>(<span style="color:#e6db74">&#39;../&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>, $_GET[<span style="color:#e6db74">&#39;lang&#39;</span>]) <span style="color:#f92672">:</span> $lang[<span style="color:#a6e22e">array_rand</span>($lang)]));
 <span style="color:#75715e">?&gt;</span><span style="color:#960050;background-color:#1e0010">
 </span><span style="color:#960050;background-color:#1e0010">&lt;/body&gt;
-</span></code></pre></div><p>Honestly, I had no idea how to bypass this <code>str_replace</code> filter and this is perhaps the simplest filter to stop path traversal. The <code>str_replace</code> function call removes <code>../</code> from the provided string. So, I started reading about path traversal attacks and the solution I found was so obvious that I wanted to punch myself.</p>
-<p>What <code>str_replace</code> is doing is that it removes all instances of <code>../</code> in the given string but it does not do this recursively. A string like <code>../../../../foo/bar</code> will get reduced to <code>foo/bar</code> but <code>...././foo/bar</code> will get reduced to <code>../foo/bar</code>. Therefore, all you need to do is add <code>../</code> in the payload which when removed will give the required payload.</p>
+</span></code></pre></div><p>Honestly, I had no idea how to bypass this <code>str_replace</code> filter and this is perhaps the simplest filter to stop path traversal. The <code>str_replace</code> function call removes <code>../</code> from the provided string and prevents files in other directories to get included. So, I started reading about path traversal attacks and the solution I found was so obvious that I wanted to punch myself.</p>
+<p>What <code>str_replace</code> is doing is that it removes all instances of <code>../</code> in the given string but it doesn&rsquo;t do this recursively. A string like <code>../../../../foo/bar</code> will get reduced to <code>foo/bar</code> but <code>...././foo/bar</code> will only get reduced to <code>../foo/bar</code>. Therefore, all you need to do is add <code>../</code> in the payload which when removed will give the required payload for the attack.</p>
 <p>Final payload: <code>?lang=..././..././flag</code></p>
 <h2 id="web---caas">WEB - Caas</h2>
-<p>This challenge also provided the source code of the website but the codebase was larger than the previous problems. Long story short, the website took a URL as input and a <code>CURL</code> request was made to the URL from the PHP backend and the output was then returned to the client. This is the PHP code snippet that made the <code>CURL</code> request -</p>
+<p>This challenge also provided the source code of the website but the codebase was larger than the previous problems. Long story short, the client side took a URL as input and a <code>CURL</code> request was made to that URL from the PHP backend and the output was then returned to the client. This is the PHP code snippet that made the <code>CURL</code> request -</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-php" data-lang="php"><span style="color:#f92672">&lt;?</span><span style="color:#a6e22e">php</span>
 <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CommandModel</span>
 {
@@ -57,11 +57,11 @@ $lang <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#39;en.
 <p><img src="/static/beeceptor.png" alt="console"></p>
 <p>I read other people&rsquo;s writeups once the event was over and the actual solution made me feel very dumb. You can simply use the <code>file</code> URI <a href="https://en.wikipedia.org/wiki/File_URI_scheme">scheme</a> to directly read the <code>flag</code> file. A <code>GET</code> request to <code>file:///flag</code> would just return the file directly.</p>
 <h2 id="misc---input-as-a-service">MISC - Input as a Service</h2>
-<p>This challenge only provided an IP address to connect to and nothing else. After connecting to the IP using netcat, you get an interactive shell. After playing around with it for a few minutes, you would realise that it is a python shell. Basically, the input was executed as python using the <code>exec</code> command. Here is a code snippet that might have been running at the server -</p>
+<p>This challenge only provided an IP address to connect to and nothing else. After connecting to the IP using netcat, you get an interactive shell. After playing around with it for a few minutes, you would realise that it is a python shell. Basically, the input is executed as python code using the <code>exec</code> command. Here is a code snippet that might have been running at the server -</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">while</span> <span style="color:#ae81ff">1</span>:
   text <span style="color:#f92672">=</span> input(<span style="color:#e6db74">&#39;&gt;&gt; &#39;</span>)
   <span style="color:#66d9ef">exec</span>(text)
-</code></pre></div><p>I tried running <code>ls</code> command using <code>os.system(&quot;ls&quot;)</code> but the module <code>os</code> was not imported in the running environment. So, I started my research and found an <a href="http://vipulchaskar.blogspot.com/2012/10/exploiting-eval-function-in-python">article</a>.</p>
+</code></pre></div><p>I tried running <code>ls</code> command using <code>os.system(&quot;ls&quot;)</code> but the module <code>os</code> was not imported in the running environment. So, I started researching and found this <a href="http://vipulchaskar.blogspot.com/2012/10/exploiting-eval-function-in-python">article</a>.</p>
 <p>The solution is that python has a function <code>__import__</code> that can be used to dynamically include modules and run commands. Here are the commands I tried and the output I received.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">Do you sound like an alien<span style="color:#960050;background-color:#1e0010">?</span>
 <span style="color:#f92672">&gt;&gt;&gt;</span> 
@@ -71,8 +71,8 @@ input_as_a_service<span style="color:#f92672">.</span>py
 __import__(<span style="color:#e6db74">&#34;os&#34;</span>)<span style="color:#f92672">.</span>system(<span style="color:#e6db74">&#34;cat flag.txt&#34;</span>)
 CHTB{<span style="color:#ae81ff">4</span>li3n5_us3_pyth0n2<span style="color:#f92672">.</span>X<span style="color:#960050;background-color:#1e0010">?!</span>}
 </code></pre></div><h2 id="misc---alien-camp">MISC - Alien Camp</h2>
-<p>In this challenge, there was a mapping provided to us which was an emoji and an integer associated with it. In order to get the flag, 500 queries had to be answered that were mathematical expressions using the emojis. Obviously this can not be done manually and needed automation.</p>
-<p>The solution to this was pretty straightforward. I created a simple dictionary with the emojis as key and the integer as the value. And for every query, I replaced the emoji with its integer value and evaluated the string using <code>eval</code>. Here is the final script that worked.</p>
+<p>In this challenge, there was a mapping provided which was a bunch of emojis and an integer associated with each of the emoji. In order to get the flag, 500 queries had to be answered which were mathematical expressions containing the emojis as variables. This can not be done manually and needed automation since each query had to be answered in a short duration.</p>
+<p>The solution to this was pretty straightforward. I created a simple dictionary with the emojis as key and the integers as the value. And for every query, I replaced the emoji with its integer value and evaluated the string using <code>eval</code>. Here is the final script that worked.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
 
 r <span style="color:#f92672">=</span> remote(<span style="color:#e6db74">&#34;138.68.185.219&#34;</span>, <span style="color:#ae81ff">31618</span>)
@@ -108,14 +108,14 @@ r<span style="color:#f92672">.</span>sendline(<span style="color:#e6db74">b</spa
 <span style="color:#66d9ef">print</span>(r<span style="color:#f92672">.</span>recv()<span style="color:#f92672">.</span>decode())
 </code></pre></div><h2 id="rev---passphrase">REV - Passphrase</h2>
 <p>This was a reverse engineering challenge so naturally there was a binary provided. The binary was a <code>64-bit ELF</code> that wasn&rsquo;t stripped. On running the binary, it asked for a secret passphrase and it was safe to assume that the flag was the secret passphrase.</p>
-<p>On executing the binary instruction by instruction, I found that there was a call to <code>strcmp</code> function that compared the user input to a fixed value. When the execution reached the <code>strcmp</code> call, the two values were present in the appropriate registers. Here is the gdb output on reaching the <code>strcmp</code> call.</p>
+<p>On executing the binary instruction by instruction, I found that there was a call to <code>strcmp</code> function that compared the user input to a fixed value. When the execution reached the <code>strcmp</code> call, the two values required for the function call were present in the appropriate registers. Here is the gdb output on reaching the <code>strcmp</code> call.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"> ► 0x555555554ac0 &lt;main+250&gt;    call   strcmp@plt &lt;0x555555554820&gt;
         s1: 0x7fffffffdda0 ◂— <span style="color:#e6db74">&#39;3xtr4t3rR3stR14L5_VS_hum4n5&#39;</span>
         s2: 0x7fffffffddc0 ◂— 0x41414141 /* <span style="color:#e6db74">&#39;AAAA&#39;</span> */
  
 </code></pre></div><p>Thanks <a href="https://github.com/pwndbg/pwndbg">pwndbg</a> for making our lives easier.</p>
 <h2 id="rev---authenticator">REV - Authenticator</h2>
-<p>This was another easy straightforward challenge. The binary asked for an Alien ID which was <code>11337</code>. This was present in the source code of the binary generated by Ghidra. The second input asked for a pin which was checked by the <code>checkpin</code> function. Here is the source code of the function.</p>
+<p>This was another straightforward challenge. The binary asked for an Alien ID which was <code>11337</code>. This was present in the source code of the binary generated by Ghidra. The second input asked for a pin which was validated by the <code>checkpin</code> function. Here is the source code of the function.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">undefined8 <span style="color:#a6e22e">checkpin</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>param_1) {
   size_t sVar1;
   <span style="color:#66d9ef">int</span> local_24;
@@ -132,9 +132,9 @@ r<span style="color:#f92672">.</span>sendline(<span style="color:#e6db74">b</spa
   }
   <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
 }
-</code></pre></div><p>This function computes the XOR of this string with the integer <code>9</code> and compares with the provided input. Therefore, the flag is this long string when XOR&rsquo;d with <code>9</code> byte by byte. Pretty straightforward like I said before.</p>
+</code></pre></div><p>This function computes the XOR of the bytes of the string with the integer <code>9</code> and compares with the provided input. Therefore, the flag is this long string when XOR&rsquo;d with <code>9</code> byte by byte. Pretty straightforward like I said before.</p>
 <h2 id="conclusion">Conclusion</h2>
-<p>Overall, I enjoyed working on these challenges and the writeups I have read on the challenges I couldn&rsquo;t solve have been amazing. I was so close in some of them but just couldn&rsquo;t connect the final dot. Other than these, I also solved 4 crypto challenges but I am not at all equipped with the skills to explain how I solved them. I like that the difficulty level of problems increased gradually so everyone could solve some challenges. I finished at 652 in 4740 teams which isn&rsquo;t that good but I learned a great deal from this CTF. This was clearly the best CTF I have participated in and the team at Hack The Box did a great job. Thanks for reading. Cheers!</p>
+<p>Overall, I enjoyed working on these challenges and the writeups I have read on the challenges I couldn&rsquo;t solve have been amazing. I was so close in some of them but just couldn&rsquo;t connect the final dots. Other than these, I also solved 4 crypto challenges but I am not at all equipped with the skills to explain how I solved them. I like that the difficulty level of problems increased gradually so everyone could solve some challenges. I finished at 652 in 4740 teams which isn&rsquo;t that good but I learned a great deal from this CTF. This was easily the best CTF I have participated in and the team at Hack The Box did a great job. Thanks for reading. Cheers!</p>
 ]]></content>
         </item>
         
