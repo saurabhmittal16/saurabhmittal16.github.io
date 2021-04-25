@@ -6,7 +6,17 @@
     <description>Recent content in ctf on Saurabh Mittal</description>
     <generator>Hugo -- gohugo.io</generator>
     <copyright>&lt;a href=&#34;https://creativecommons.org/licenses/by-nc/4.0/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;CC BY-NC 4.0&lt;/a&gt;</copyright>
-    <lastBuildDate>Mon, 15 Mar 2021 22:00:35 +0530</lastBuildDate><atom:link href="https://saurabhmittal16.github.io/tags/ctf/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 25 Apr 2021 22:00:35 +0530</lastBuildDate><atom:link href="https://saurabhmittal16.github.io/tags/ctf/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Hack The Box - Cyber Apocalypse CTF 21</title>
+      <link>https://saurabhmittal16.github.io/posts/2021/04/hack-the-box-cyber-apocalypse-ctf-21/</link>
+      <pubDate>Sun, 25 Apr 2021 22:00:35 +0530</pubDate>
+      
+      <guid>https://saurabhmittal16.github.io/posts/2021/04/hack-the-box-cyber-apocalypse-ctf-21/</guid>
+      <description>I participated in Hack The Box&amp;rsquo;s Cyber Apocalypse CTF 2021 this week. I was only able to solve 11 challenges (excluding the welcome challenge) but overall it was a fun event. The challenges were nice and did not need any form of guessing.
+WEB - Inspector Gadget This was the entry level web challenge and the flag was split in 3 parts which were then placed in the HTML, CSS and JavaScript files as comments.</description>
+    </item>
+    
     <item>
       <title>UTCTF recur challenge</title>
       <link>https://saurabhmittal16.github.io/posts/2021/03/utctf-recur-challenge/</link>

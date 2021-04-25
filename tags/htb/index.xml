@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>rev on Saurabh Mittal</title>
-    <link>https://saurabhmittal16.github.io/tags/rev/</link>
-    <description>Recent content in rev on Saurabh Mittal</description>
+    <title>htb on Saurabh Mittal</title>
+    <link>https://saurabhmittal16.github.io/tags/htb/</link>
+    <description>Recent content in htb on Saurabh Mittal</description>
     <generator>Hugo -- gohugo.io</generator>
     <copyright>&lt;a href=&#34;https://creativecommons.org/licenses/by-nc/4.0/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;CC BY-NC 4.0&lt;/a&gt;</copyright>
-    <lastBuildDate>Sun, 25 Apr 2021 22:00:35 +0530</lastBuildDate><atom:link href="https://saurabhmittal16.github.io/tags/rev/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 25 Apr 2021 22:00:35 +0530</lastBuildDate><atom:link href="https://saurabhmittal16.github.io/tags/htb/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Hack The Box - Cyber Apocalypse CTF 21</title>
       <link>https://saurabhmittal16.github.io/posts/2021/04/hack-the-box-cyber-apocalypse-ctf-21/</link>
@@ -15,16 +15,6 @@
       <guid>https://saurabhmittal16.github.io/posts/2021/04/hack-the-box-cyber-apocalypse-ctf-21/</guid>
       <description>I participated in Hack The Box&amp;rsquo;s Cyber Apocalypse CTF 2021 this week. I was only able to solve 11 challenges (excluding the welcome challenge) but overall it was a fun event. The challenges were nice and did not need any form of guessing.
 WEB - Inspector Gadget This was the entry level web challenge and the flag was split in 3 parts which were then placed in the HTML, CSS and JavaScript files as comments.</description>
-    </item>
-    
-    <item>
-      <title>UTCTF recur challenge</title>
-      <link>https://saurabhmittal16.github.io/posts/2021/03/utctf-recur-challenge/</link>
-      <pubDate>Mon, 15 Mar 2021 22:00:35 +0530</pubDate>
-      
-      <guid>https://saurabhmittal16.github.io/posts/2021/03/utctf-recur-challenge/</guid>
-      <description>Over the weekend, I participated in the UTCTF 2021 but was unable to spend a lot of time on the challenges. One of the challenge I worked on was the recur challenge in the Reverse Engineering category. The challenge was not that hard but I had fun working on it so I decided to write a writeup for the challenge.
-The challenge had a binary file attached with it and the description of the challenge was</description>
     </item>
     
   </channel>
